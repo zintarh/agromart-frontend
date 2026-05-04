@@ -11,7 +11,7 @@ export function OnboardingSplashScreen({
   useEffect(() => {
     const timer = window.setTimeout(() => {
       onContinue()
-    }, 3000)
+    }, 1400)
 
     return () => window.clearTimeout(timer)
   }, [onContinue])
