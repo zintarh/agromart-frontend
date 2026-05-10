@@ -236,7 +236,16 @@ function CreateAccountPage() {
           <Button
             type="submit"
             className="mt-8 h-14 w-full rounded-2xl font-bold"
-            disabled={!form.values.agree_terms || isLoading}
+            disabled={
+              !form.values.first_name ||
+              !form.values.last_name ||
+              !form.values.email ||
+              !form.values.phone ||
+              !form.values.password ||
+              !form.values.confirm_password ||
+              !form.values.agree_terms ||
+              isLoading
+            }
           >
             {isLoading ? "Creating Account…" : "Sign Up"}
           </Button>
