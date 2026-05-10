@@ -1,9 +1,4 @@
-/**
- * Custom hook for handling form state with Yup validation
- * Integrates with auth and provides clean form handling
- */
-
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { ObjectSchema, ValidationError } from "yup"
 
 interface UseAuthFormReturn<T> {
@@ -22,21 +17,53 @@ interface UseAuthFormReturn<T> {
   setSubmitting: (submitting: boolean) => void
 }
 
-/**
- * Hook for managing form state with Yup validation
- */
+interface UseAuthFormOptions {
+  validateOnChange?: boolean
+}
+
 export function useAuthForm<T extends Record<string, any>>(
   initialValues: T,
-  validationSchema?: ObjectSchema<any>
+  validationSchema?: ObjectSchema<any>,
+  { validateOnChange = false }: UseAuthFormOptions = {}
 ): UseAuthFormReturn<T> {
   const [values, setValuesState] = useState<T>(initialValues)
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({})
   const [touched, setTouchedState] = useState<Partial<Record<keyof T, boolean>>>({})
   const [isSubmitting, setSubmitting] = useState(false)
 
-  const setValue = useCallback((field: keyof T, value: any) => {
-    setValuesState((prev) => ({ ...prev, [field]: value }))
-  }, [])
+  // Always-fresh ref so callbacks can read latest values without going stale
+  const valuesRef = useRef(values)
+  valuesRef.current = values
+
+  const runValidation = useCallback(
+    async (currentValues: T) => {
+      if (!validationSchema) return
+      try {
+        await validationSchema.validate(currentValues, { abortEarly: false })
+        setErrors({})
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          const newErrors: Partial<Record<keyof T, string>> = {}
+          error.inner.forEach((err) => {
+            if (err.path) newErrors[err.path as keyof T] = err.message
+          })
+          setErrors(newErrors)
+        }
+      }
+    },
+    [validationSchema]
+  )
+
+  const setValue = useCallback(
+    (field: keyof T, value: any) => {
+      setValuesState((prev) => {
+        const next = { ...prev, [field]: value }
+        if (validateOnChange) runValidation(next)
+        return next
+      })
+    },
+    [validateOnChange, runValidation]
+  )
 
   const setValues = useCallback((newValues: T) => {
     setValuesState(newValues)
@@ -46,19 +73,22 @@ export function useAuthForm<T extends Record<string, any>>(
     setErrors((prev) => ({ ...prev, [field]: error }))
   }, [])
 
-  const setTouched = useCallback((field: keyof T, touched: boolean) => {
-    setTouchedState((prev) => ({ ...prev, [field]: touched }))
-  }, [])
+  // Marking a field as touched also triggers a full validation pass so
+  // errors are visible immediately on blur (not only on submit).
+  const setTouched = useCallback(
+    (field: keyof T, isTouched: boolean) => {
+      setTouchedState((prev) => ({ ...prev, [field]: isTouched }))
+      if (isTouched) runValidation(valuesRef.current)
+    },
+    [runValidation]
+  )
 
   const validateField = useCallback(
     async (field: keyof T): Promise<boolean> => {
       if (!validationSchema) return true
-
       try {
-        // Create a schema for just this field
         const fieldSchema = (validationSchema as any).fields[field]
         if (!fieldSchema) return true
-
         await fieldSchema.validate(values[field])
         setFieldError(field, "")
         return true
@@ -74,7 +104,6 @@ export function useAuthForm<T extends Record<string, any>>(
 
   const validateForm = useCallback(async (): Promise<boolean> => {
     if (!validationSchema) return true
-
     try {
       await validationSchema.validate(values, { abortEarly: false })
       setErrors({})
@@ -83,9 +112,7 @@ export function useAuthForm<T extends Record<string, any>>(
       if (error instanceof ValidationError) {
         const newErrors: Partial<Record<keyof T, string>> = {}
         error.inner.forEach((err) => {
-          if (err.path) {
-            newErrors[err.path as keyof T] = err.message
-          }
+          if (err.path) newErrors[err.path as keyof T] = err.message
         })
         setErrors(newErrors)
       }
@@ -100,9 +127,10 @@ export function useAuthForm<T extends Record<string, any>>(
     setSubmitting(false)
   }, [initialValues])
 
-  const isValid = useMemo(() => {
-    return Object.keys(errors).length === 0 && Object.keys(values).length > 0
-  }, [errors, values])
+  const isValid = useMemo(
+    () => Object.keys(errors).length === 0 && Object.keys(values).length > 0,
+    [errors, values]
+  )
 
   return {
     values,

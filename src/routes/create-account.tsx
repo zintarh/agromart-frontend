@@ -51,7 +51,8 @@ function CreateAccountPage() {
       agree_terms: false,
       country_code: "234",
     },
-    registerSchema
+    registerSchema,
+    { validateOnChange: true }
   )
 
   const isLoading = form.isSubmitting || loadingState === "loading"
