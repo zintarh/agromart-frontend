@@ -16,7 +16,7 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "AgroMart | market place",
+        title: "AgroMart | Fresh Produce Marketplace",
       },
     ],
     links: [
