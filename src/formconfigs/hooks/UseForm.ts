@@ -1,9 +1,18 @@
-import { useReducer, useEffect, useState } from "react";
-import UseToggle from "@hooks/useToggle";
+import { useReducer, useEffect, useCallback, useState } from "react";
 import { DELETE, SET_INITIAL_ERRORS, UPDATE, RESET, ADD } from "../FormActions";
 import formReducer, { clone } from "../FormReducer";
-import * as Yup from "yup";
-import { logger } from "@shared/utils";
+
+function UseToggle(initial = false) {
+	const [isOpen, setIsOpen] = useState(initial);
+	const open = useCallback(() => setIsOpen(true), []);
+	const close = useCallback(() => setIsOpen(false), []);
+	const toogle = useCallback(() => setIsOpen((prev) => !prev), []);
+	return { isOpen, open, close, toogle };
+}
+
+const logger = {
+	debug: (..._args: unknown[]) => {},
+};
 
 export function UseForm(initialState: any, sch: any, initialIsValid = false) {
 	const schema = sch;
@@ -39,7 +48,7 @@ export function UseForm(initialState: any, sch: any, initialIsValid = false) {
 			schema,
 		});
 	};
-	const deleteFieldArray = ({ name, index = undefined, payload }: { name: string, index?: number, payload?: any }) => {
+	const deleteFieldArray = ({ name, index = undefined }: { name: string, index?: number, payload?: any }) => {
 		dispatch({
 			type: DELETE,
 			name,
