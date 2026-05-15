@@ -15,7 +15,7 @@ type UserRoleTabsProps = {
 export function UserRoleTabs({ value = DEFAULT_USER_MANAGEMENT_TAB, onChange }: UserRoleTabsProps) {
   return (
     <div
-      className="inline-flex max-w-full flex-wrap gap-0.5 overflow-hidden rounded-lg border border-[#E8E8E8] bg-white p-0.5"
+      className="flex w-fit max-w-full flex-wrap gap-1 self-start"
       role="tablist"
       aria-label="User types"
     >
@@ -33,7 +33,7 @@ export function UserRoleTabs({ value = DEFAULT_USER_MANAGEMENT_TAB, onChange }: 
               "h-8 rounded-md px-3 text-xs font-medium transition-colors",
               isActive
                 ? "bg-[#2D5A27] text-white"
-                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                : "bg-white text-muted-foreground hover:text-foreground"
             )}
           >
             {tab.label}

@@ -1,4 +1,4 @@
-import { getWithJsonBody } from "@/api/get-with-json-body"
+import { fetchCategoriesList } from "@/api/categories-list-request"
 import { superAdminApiClient } from "@/api/super-admin-client"
 import type {
   CategoriesListParams,
@@ -8,18 +8,66 @@ import type {
   UpdateCategoryRequest,
 } from "@/api/category-types"
 import type { ApiResponse } from "@/api/types"
+import { getSuperAdminAccessToken } from "@/utils/super-admin-storage"
 
 const CATEGORIES_BASE = "/categories"
+const CATEGORIES_LIST_PROXY = "/api/categories/list"
+const PROXY_TIMEOUT_MS = 8_000
 
-export const categoriesApi = {
-  list(params: CategoriesListParams = {}): Promise<CategoriesListResponse> {
-    const body = {
-      page: params.page ?? 1,
-      limit: params.limit ?? 10,
-      sort_order: params.sort_order ?? "desc",
+async function fetchCategoriesListViaProxy(
+  params: CategoriesListParams,
+  authorization?: string
+): Promise<CategoriesListResponse> {
+  const query = new URLSearchParams({
+    page: String(params.page ?? 1),
+    limit: String(params.limit ?? 10),
+    sort_order: params.sort_order ?? "desc",
+  })
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  }
+
+  if (authorization) {
+    headers.Authorization = authorization
+  }
+
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS)
+
+  try {
+    const response = await fetch(`${CATEGORIES_LIST_PROXY}?${query}`, {
+      headers,
+      signal: controller.signal,
+    })
+
+    const contentType = response.headers.get("content-type") ?? ""
+    if (!contentType.includes("application/json")) {
+      throw new Error("Categories proxy returned a non-JSON response")
     }
 
-    return getWithJsonBody<CategoriesListResponse>(superAdminApiClient, CATEGORIES_BASE, body)
+    const payload = (await response.json()) as CategoriesListResponse
+
+    if (!response.ok) {
+      throw new Error(payload?.message || `Request failed with status ${response.status}`)
+    }
+
+    return payload
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
+export const categoriesApi = {
+  async list(params: CategoriesListParams = {}): Promise<CategoriesListResponse> {
+    const token = getSuperAdminAccessToken()
+    const authorization = token ? `Bearer ${token}` : undefined
+
+    try {
+      return await fetchCategoriesListViaProxy(params, authorization)
+    } catch {
+      return fetchCategoriesList(params, authorization)
+    }
   },
 
   create(data: CreateCategoryRequest): Promise<ApiResponse<CategoryRecord>> {

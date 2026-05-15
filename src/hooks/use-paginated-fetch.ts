@@ -18,7 +18,10 @@ export function usePaginatedFetch<T, F extends object>(
   const filtersKey = JSON.stringify(filters)
   const prevFiltersKeyRef = useRef(filtersKey)
   const fetchPageRef = useRef(fetchPage)
+  const filtersRef = useRef(filters)
+
   fetchPageRef.current = fetchPage
+  filtersRef.current = filters
 
   useEffect(() => {
     let cancelled = false
@@ -35,23 +38,28 @@ export function usePaginatedFetch<T, F extends object>(
     const pageToFetch = filtersChanged ? 1 : currentPage
 
     void (async () => {
-      const result = await fetchPageRef.current(pageToFetch, filters)
-      if (!cancelled) {
-        setItems(result.items)
-        setTotalCount(result.total)
-        setIsInitialLoading(false)
+      try {
+        const result = await fetchPageRef.current(pageToFetch, filtersRef.current)
+        if (!cancelled) {
+          setItems(result.items)
+          setTotalCount(result.total)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsInitialLoading(false)
+        }
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [currentPage, filtersKey, filters, refreshKey])
+  }, [currentPage, filtersKey, refreshKey])
 
   const totalPages = getTotalPages(totalCount, ADMIN_TABLE_PAGE_SIZE)
 
   useEffect(() => {
-    if (totalCount > 0 && currentPage > totalPages) {
+    if (totalPages > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages)
     }
   }, [currentPage, totalCount, totalPages])

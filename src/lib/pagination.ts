@@ -3,7 +3,8 @@ export const ADMIN_TABLE_PAGE_SIZE = 10
 export type PaginationPage = number | "..."
 
 export function getTotalPages(itemCount: number, pageSize: number) {
-  return Math.max(1, Math.ceil(itemCount / pageSize))
+  if (itemCount <= 0) return 0
+  return Math.ceil(itemCount / pageSize)
 }
 
 export function getPaginationRange(

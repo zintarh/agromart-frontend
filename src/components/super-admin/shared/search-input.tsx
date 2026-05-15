@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Search } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,11 @@ export function SearchInput({
   inputClassName,
 }: SearchInputProps) {
   const [draft, setDraft] = useState(value)
+  const onChangeRef = useRef(onChange)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
 
   useEffect(() => {
     setDraft(value)
@@ -27,11 +32,13 @@ export function SearchInput({
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      onChange?.(draft)
+      if (draft !== value) {
+        onChangeRef.current?.(draft)
+      }
     }, 300)
 
     return () => window.clearTimeout(timeoutId)
-  }, [draft, onChange])
+  }, [draft, value])
 
   return (
     <div className="relative min-w-0 flex-1">

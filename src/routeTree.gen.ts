@@ -39,6 +39,7 @@ import { Route as SuperAdminProductsIndexRouteImport } from './routes/super-admi
 import { Route as SuperAdminCategoriesIndexRouteImport } from './routes/super-admin/categories/index'
 import { Route as SuperAdminUsersUserIdRouteImport } from './routes/super-admin/users/$userId'
 import { Route as SuperAdminProductsNewRouteImport } from './routes/super-admin/products/new'
+import { Route as ApiCategoriesListRouteImport } from './routes/api/categories/list'
 
 const VerifyPhoneRoute = VerifyPhoneRouteImport.update({
   id: '/verify-phone',
@@ -191,6 +192,11 @@ const SuperAdminProductsNewRoute = SuperAdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => SuperAdminProductsRoute,
 } as any)
+const ApiCategoriesListRoute = ApiCategoriesListRouteImport.update({
+  id: '/api/categories/list',
+  path: '/api/categories/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/super-admin/users': typeof SuperAdminUsersRouteWithChildren
   '/super-admin/vendors': typeof SuperAdminVendorsRoute
   '/super-admin/': typeof SuperAdminIndexRoute
+  '/api/categories/list': typeof ApiCategoriesListRoute
   '/super-admin/products/new': typeof SuperAdminProductsNewRoute
   '/super-admin/users/$userId': typeof SuperAdminUsersUserIdRoute
   '/super-admin/categories/': typeof SuperAdminCategoriesIndexRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/super-admin/sub-admins': typeof SuperAdminSubAdminsRoute
   '/super-admin/vendors': typeof SuperAdminVendorsRoute
   '/super-admin': typeof SuperAdminIndexRoute
+  '/api/categories/list': typeof ApiCategoriesListRoute
   '/super-admin/products/new': typeof SuperAdminProductsNewRoute
   '/super-admin/users/$userId': typeof SuperAdminUsersUserIdRoute
   '/super-admin/categories': typeof SuperAdminCategoriesIndexRoute
@@ -279,6 +287,7 @@ export interface FileRoutesById {
   '/super-admin/users': typeof SuperAdminUsersRouteWithChildren
   '/super-admin/vendors': typeof SuperAdminVendorsRoute
   '/super-admin/': typeof SuperAdminIndexRoute
+  '/api/categories/list': typeof ApiCategoriesListRoute
   '/super-admin/products/new': typeof SuperAdminProductsNewRoute
   '/super-admin/users/$userId': typeof SuperAdminUsersUserIdRoute
   '/super-admin/categories/': typeof SuperAdminCategoriesIndexRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/super-admin/users'
     | '/super-admin/vendors'
     | '/super-admin/'
+    | '/api/categories/list'
     | '/super-admin/products/new'
     | '/super-admin/users/$userId'
     | '/super-admin/categories/'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/super-admin/sub-admins'
     | '/super-admin/vendors'
     | '/super-admin'
+    | '/api/categories/list'
     | '/super-admin/products/new'
     | '/super-admin/users/$userId'
     | '/super-admin/categories'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/super-admin/users'
     | '/super-admin/vendors'
     | '/super-admin/'
+    | '/api/categories/list'
     | '/super-admin/products/new'
     | '/super-admin/users/$userId'
     | '/super-admin/categories/'
@@ -390,6 +402,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SuperAdminRoute: typeof SuperAdminRouteWithChildren
   VerifyPhoneRoute: typeof VerifyPhoneRoute
+  ApiCategoriesListRoute: typeof ApiCategoriesListRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -604,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperAdminProductsNewRouteImport
       parentRoute: typeof SuperAdminProductsRoute
     }
+    '/api/categories/list': {
+      id: '/api/categories/list'
+      path: '/api/categories/list'
+      fullPath: '/api/categories/list'
+      preLoaderRoute: typeof ApiCategoriesListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -697,6 +717,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SuperAdminRoute: SuperAdminRouteWithChildren,
   VerifyPhoneRoute: VerifyPhoneRoute,
+  ApiCategoriesListRoute: ApiCategoriesListRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
