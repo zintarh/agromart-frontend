@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { createFileRoute, Link, redirect } from "@tanstack/react-router"
-import { isAuthenticated } from "@/utils/storage"
+import { shouldRedirectAuthenticatedGuest } from "@/lib/auth-guard"
 import { Check, Circle, Eye, EyeOff, Mail, Phone, User, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { LabeledInput } from "@/components/auth/labeled-input"
@@ -12,7 +12,7 @@ import { registerSchema } from "@/validations/auth"
 
 export const Route = createFileRoute("/create-account")({
   beforeLoad: () => {
-    if (isAuthenticated()) {
+    if (shouldRedirectAuthenticatedGuest()) {
       throw redirect({ to: "/dashboard" })
     }
   },

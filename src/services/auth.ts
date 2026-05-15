@@ -1,6 +1,7 @@
 
 import { authApi } from "@/api/auth"
 import type { User } from "@/api/types"
+import { extractAuthPayload } from "@/lib/extract-auth-payload"
 import { setTokens, clearTokens, setUser, getUser } from "@/utils/storage"
 
 export const authService = {
@@ -25,7 +26,7 @@ export const authService = {
    */
   async verifyEmail(email: string, token: string) {
     const response = await authApi.verifyEmail({ email, token })
-    const tokenData = (response as any).data?.data
+    const tokenData = extractAuthPayload(response)
     if (tokenData?.access_token && tokenData?.refresh_token) {
       setTokens(tokenData.access_token, tokenData.refresh_token)
       setUser(tokenData.user)
@@ -46,8 +47,7 @@ export const authService = {
    */
   async login(email: string, password: string) {
     const response = await authApi.login({ email, password })
-    // API wraps the payload in an extra envelope: res.data.data holds the actual tokens
-    const tokenData = (response as any).data?.data
+    const tokenData = extractAuthPayload(response)
     if (tokenData?.access_token && tokenData?.refresh_token) {
       setTokens(tokenData.access_token, tokenData.refresh_token)
       setUser(tokenData.user)

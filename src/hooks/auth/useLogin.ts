@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { extractAuthPayload } from "@/lib/extract-auth-payload"
 import { authService } from "@/services/auth"
 import { useSessionStore } from "@/store/sessionStore"
 import type { LoadingState } from "@/types/loading"
@@ -13,7 +14,7 @@ export function useLogin() {
     setError(null)
     try {
       const response = await authService.login(email, password)
-      setSession((response as any).data?.data?.user || null)
+      setSession(extractAuthPayload(response)?.user ?? null)
       setLoadingState("success")
       return response
     } catch (err: any) {

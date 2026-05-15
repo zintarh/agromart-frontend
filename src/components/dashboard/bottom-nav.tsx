@@ -10,8 +10,10 @@ const NAV_ITEMS = [
 export function BottomNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40">
-      <div className="bg-primary/10 px-6 py-2 text-center text-xs font-medium text-primary">
+      <div className="flex items-center justify-center w-full">
+        <div className="bg-primary/10 w-full px-6 py-2 text-center text-xs font-medium text-primary">
         🚚 Free delivery on orders above ₦5,000
+      </div>
       </div>
       <nav className="border-t border-input bg-background">
         <div className="mx-auto flex max-w-2xl items-center justify-around px-6 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">

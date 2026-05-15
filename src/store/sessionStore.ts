@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { devtools, persist } from "zustand/middleware"
 import type { User } from "@/api/types"
+import { getUser, isAuthenticated } from "@/utils/storage"
 
 interface SessionState {
   user: User | null
@@ -24,6 +25,14 @@ export const useSessionStore = create<SessionState>()(
           user: state.user,
           isAuthenticated: state.isAuthenticated,
         }),
+        onRehydrateStorage: () => (state) => {
+          if (!state) return
+          const token = isAuthenticated()
+          const user = getUser()
+          if (token) {
+            state.setSession(user)
+          }
+        },
       }
     ),
     { name: "SessionStore" }

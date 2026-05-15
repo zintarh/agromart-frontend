@@ -3,6 +3,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import { Toaster } from "sonner"
 
+import { AuthSessionSync } from "@/components/auth/auth-session-sync"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -44,6 +45,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <AuthSessionSync />
         {children}
         <Toaster position="top-center" richColors />
         <TanStackDevtools

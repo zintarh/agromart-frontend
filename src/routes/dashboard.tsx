@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { isAuthenticated } from "@/utils/storage"
+import { shouldRequireAuth } from "@/lib/auth-guard"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { SearchBar } from "@/components/dashboard/search-bar"
 import { CategoryFilter } from "@/components/dashboard/category-filter"
@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/dashboard/bottom-nav"
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => {
-    if (!isAuthenticated()) {
+    if (shouldRequireAuth()) {
       throw redirect({ to: "/login" })
     }
   },

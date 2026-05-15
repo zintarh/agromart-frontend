@@ -6,7 +6,8 @@ import axios, { AxiosError } from "axios"
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios"
 import { ApiError } from "./types"
 import type { ApiErrorResponse } from "./types"
-import { getAccessToken, setTokens, clearTokens } from "@/utils/storage"
+import { extractAuthPayload } from "@/lib/extract-auth-payload"
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "@/utils/storage"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://agromart-production.up.railway.app/"
 
@@ -50,7 +51,7 @@ function createApiClient(): AxiosInstance {
 
         try {
           // Only refresh if we have a refresh token
-          const refreshToken = localStorage.getItem("refresh_token")
+          const refreshToken = getRefreshToken()
           if (refreshToken) {
             const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
               headers: {
@@ -58,11 +59,14 @@ function createApiClient(): AxiosInstance {
               },
             })
 
-            const { access_token, refresh_token } = response.data.data
-            setTokens(access_token, refresh_token)
+            const tokens = extractAuthPayload(response.data)
+            if (!tokens?.access_token || !tokens?.refresh_token) {
+              throw new Error("Invalid refresh response")
+            }
+            setTokens(tokens.access_token, tokens.refresh_token)
 
             // Retry original request
-            originalRequest.headers.Authorization = `Bearer ${access_token}`
+            originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
             return client(originalRequest)
           }
         } catch (refreshError) {
