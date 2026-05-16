@@ -71,7 +71,7 @@ export function PublishingSection({ onPublish, onSaveDraft }: PublishingSectionP
         </Button>
         <div className="pt-1 text-center">
           <Link
-            to="/super-admin/products"
+            to="/admin/products"
             className={cn("text-sm font-medium text-muted-foreground hover:text-foreground")}
           >
             Cancel

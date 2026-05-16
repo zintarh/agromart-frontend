@@ -1,19 +1,12 @@
 /**
- * API client for super-admin requests (uses super-admin tokens only).
+ * API client for /super-admin/* endpoints (super_admin role only).
  */
 
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios"
 
-import { ApiError } from "./types"
-import type { ApiErrorResponse } from "./types"
-import { extractAuthPayload } from "@/lib/extract-auth-payload"
-import {
-  clearSuperAdminTokens,
-  getSuperAdminAccessToken,
-  getSuperAdminRefreshToken,
-  setSuperAdminTokens,
-} from "@/utils/super-admin-storage"
+import { attachPortalApiResponseInterceptor } from "@/lib/attach-portal-api-interceptor"
+import { applyPortalAuthToRequest } from "@/lib/portal-auth"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://agromart-production.up.railway.app/"
 
@@ -23,59 +16,16 @@ function createSuperAdminApiClient(): AxiosInstance {
     timeout: 10000,
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
   })
 
   client.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-      const token = getSuperAdminAccessToken()
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-      return config
-    },
+    (config: InternalAxiosRequestConfig) => applyPortalAuthToRequest(config),
     (error) => Promise.reject(error)
   )
 
-  client.interceptors.response.use(
-    (response) => response,
-    async (error: AxiosError) => {
-      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
-
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true
-
-        try {
-          const refreshToken = getSuperAdminRefreshToken()
-          if (refreshToken) {
-            const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
-              headers: {
-                Authorization: `Bearer ${refreshToken}`,
-              },
-            })
-
-            const tokens = extractAuthPayload(response.data)
-            if (!tokens?.access_token || !tokens?.refresh_token) {
-              throw new Error("Invalid refresh response")
-            }
-            setSuperAdminTokens(tokens.access_token, tokens.refresh_token)
-
-            originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
-            return client(originalRequest)
-          }
-        } catch {
-          clearSuperAdminTokens()
-          window.dispatchEvent(new Event("super-admin-unauthorized"))
-        }
-      }
-
-      const errorResponse = error.response?.data as ApiErrorResponse | undefined
-      const message =
-        errorResponse?.message || error.message || "An error occurred. Please try again."
-
-      throw new ApiError(error.response?.status || 500, message, errorResponse)
-    }
-  )
+  attachPortalApiResponseInterceptor(client, API_BASE_URL.replace(/\/$/, ""))
 
   return client
 }

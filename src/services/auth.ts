@@ -2,6 +2,8 @@
 import { authApi } from "@/api/auth"
 import type { User } from "@/api/types"
 import { extractAuthPayload } from "@/lib/extract-auth-payload"
+import { isPortalRole } from "@/lib/portal-roles"
+import { setPortalTokens } from "@/lib/portal-auth"
 import { setTokens, clearTokens, setUser, getUser } from "@/utils/storage"
 
 export const authService = {
@@ -79,11 +81,17 @@ export const authService = {
     country_code?: string
   }) {
     const response = await authApi.completeInvite(data)
-    if (response.data?.access_token && response.data?.refresh_token) {
-      const { access_token, refresh_token, user } = response.data
-      setTokens(access_token, refresh_token)
-      setUser(user)
+    const tokenData = extractAuthPayload(response)
+
+    if (tokenData?.access_token && tokenData?.refresh_token) {
+      if (isPortalRole(tokenData.user?.role)) {
+        setPortalTokens(tokenData.access_token, tokenData.refresh_token)
+      } else {
+        setTokens(tokenData.access_token, tokenData.refresh_token)
+      }
+      setUser(tokenData.user)
     }
+
     return response
   },
 

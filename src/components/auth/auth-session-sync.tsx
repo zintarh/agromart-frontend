@@ -4,14 +4,20 @@ import { useEffect } from "react"
 import { useNavigate, useRouterState } from "@tanstack/react-router"
 
 import { isClient } from "@/lib/auth-guard"
+import { canAccessPortal } from "@/lib/portal-roles"
+import { getPortalAccessToken } from "@/lib/portal-auth"
 import { useSessionStore } from "@/store/sessionStore"
-import { useSuperAdminSessionStore } from "@/store/superAdminSessionStore"
+import { useAdminStore } from "@/store/adminStore"
 import { getUser, isAuthenticated } from "@/utils/storage"
-import type { User } from "@/api/types"
-import { getSuperAdminUser, isSuperAdminAuthenticated } from "@/utils/super-admin-storage"
+import type { AdminUser } from "@/types/admin-user"
 
-const GUEST_PATHS = ["/login", "/create-account", "/forgot-password", "/get-started"]
-const SUPER_ADMIN_LOGIN = "/super-admin/login"
+const GUEST_PATHS = [
+  "/login",
+  "/create-account",
+  "/forgot-password",
+  "/get-started",
+  "/accept-invite",
+]
 
 /**
  * After SSR hydration, sync persisted tokens into Zustand and enforce client-side
@@ -19,7 +25,12 @@ const SUPER_ADMIN_LOGIN = "/super-admin/login"
  */
 export function AuthSessionSync() {
   const navigate = useNavigate()
-  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const { pathname, search } = useRouterState({
+    select: (state) => ({
+      pathname: state.location.pathname,
+      search: state.location.search,
+    }),
+  })
 
   useEffect(() => {
     if (!isClient) return
@@ -29,28 +40,25 @@ export function AuthSessionSync() {
       useSessionStore.getState().setSession(user)
     }
 
-    const superAdminUser = getSuperAdminUser<User>()
-    if (isSuperAdminAuthenticated()) {
-      useSuperAdminSessionStore.getState().setSession(superAdminUser)
+    const portalUser = user as AdminUser | null
+    if (getPortalAccessToken() && canAccessPortal(portalUser)) {
+      useAdminStore.getState().setSession(portalUser)
     }
 
-    const isSuperAdminRoute = pathname.startsWith("/super-admin")
+    const isPortalRoute = pathname.startsWith("/admin")
+    const isLegacySuperAdminRoute = pathname.startsWith("/super-admin")
     const isGuestPath = GUEST_PATHS.some(
       (path) => pathname === path || pathname.startsWith(`${path}/`)
     )
 
-    if (isSuperAdminRoute) {
-      if (pathname === SUPER_ADMIN_LOGIN && isSuperAdminAuthenticated()) {
-        void navigate({ to: "/super-admin/dashboard", replace: true })
-        return
-      }
-      if (pathname !== SUPER_ADMIN_LOGIN && !isSuperAdminAuthenticated()) {
-        void navigate({
-          to: SUPER_ADMIN_LOGIN,
-          search: { redirect: pathname },
-          replace: true,
-        })
-      }
+    if (isLegacySuperAdminRoute) {
+      const path = pathname.replace(/^\/super-admin/, "/admin") || "/admin/dashboard"
+      void navigate({ to: path, search, replace: true })
+      return
+    }
+
+    // Portal routes: redirects handled by beforeLoad + PortalRouteGate (avoids UI flash).
+    if (isPortalRoute) {
       return
     }
 
@@ -59,10 +67,10 @@ export function AuthSessionSync() {
       return
     }
 
-    if (!isGuestPath && !isSuperAdminRoute && !isAuthenticated()) {
+    if (!isGuestPath && !isPortalRoute && !isAuthenticated()) {
       void navigate({ to: "/login", replace: true })
     }
-  }, [navigate, pathname])
+  }, [navigate, pathname, search])
 
   return null
 }

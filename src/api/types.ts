@@ -116,12 +116,24 @@ export interface ApiErrorResponse {
 }
 
 export class ApiError extends Error {
+  /** Set when a global portal listener already surfaced this permission error. */
+  public readonly permissionDenied: boolean
+
   constructor(
     public statusCode: number,
     message: string,
-    public errorResponse?: ApiErrorResponse
+    public errorResponse?: ApiErrorResponse,
+    options?: { permissionDenied?: boolean }
   ) {
     super(message)
     this.name = "ApiError"
+    this.permissionDenied = options?.permissionDenied ?? false
   }
+}
+
+export function getApiErrorToastMessage(err: unknown, fallback: string): string | null {
+  if (err instanceof ApiError && err.permissionDenied) {
+    return null
+  }
+  return err instanceof Error ? err.message : fallback
 }

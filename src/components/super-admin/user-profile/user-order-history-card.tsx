@@ -19,6 +19,14 @@ const headerClass =
   "h-10 px-0 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
 
 export function UserOrderHistoryCard({ profile }: UserOrderHistoryCardProps) {
+  if (profile.orderHistory.length === 0) {
+    return (
+      <ContentPanelCard title="Order History">
+        <p className="text-sm text-muted-foreground">No orders yet.</p>
+      </ContentPanelCard>
+    )
+  }
+
   return (
     <ContentPanelCard title="Order History">
       <Table>

@@ -1,12 +1,12 @@
 /** Super-admin routes used from the analytics dashboard. */
 export const dashboardLinks = {
-  orders: "/super-admin/orders",
-  products: "/super-admin/products",
-  users: "/super-admin/users",
-  vendors: "/super-admin/vendors",
-  reports: "/super-admin/reports",
-  delivery: "/super-admin/delivery",
-  promoCodes: "/super-admin/promo-codes",
-  payment: "/super-admin/payment",
-  notifications: "/super-admin/notifications",
+  orders: "/admin/orders",
+  products: "/admin/products",
+  users: "/admin/users",
+  vendors: "/admin/vendors",
+  reports: "/admin/reports",
+  delivery: "/admin/delivery",
+  promoCodes: "/admin/promo-codes",
+  payment: "/admin/payment",
+  notifications: "/admin/notifications",
 } as const

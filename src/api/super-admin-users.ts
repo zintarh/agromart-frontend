@@ -31,4 +31,10 @@ export const superAdminUsersApi = {
       .patch<ApiResponse<SuperAdminUserRecord>>(`${SUPER_ADMIN_BASE}/users/${userId}/promote`)
       .then((res) => res.data)
   },
+
+  deactivateUser(userId: number): Promise<ApiResponse> {
+    return superAdminApiClient
+      .delete<ApiResponse>(`${SUPER_ADMIN_BASE}/users/${userId}`)
+      .then((res) => res.data)
+  },
 }

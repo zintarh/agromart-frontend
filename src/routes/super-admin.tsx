@@ -1,20 +1,9 @@
-import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { SuperAdminAuthListener } from "@/components/super-admin/auth/super-admin-auth-listener"
-import { ensureSuperAdminRouteAccess } from "@/lib/super-admin-route-guard"
-
+/** Legacy URLs → /admin portal */
 export const Route = createFileRoute("/super-admin")({
   beforeLoad: ({ location }) => {
-    ensureSuperAdminRouteAccess(location)
+    const path = location.pathname.replace(/^\/super-admin/, "/admin") || "/admin/dashboard"
+    throw redirect({ to: path, search: location.search })
   },
-  component: SuperAdminRouteLayout,
 })
-
-function SuperAdminRouteLayout() {
-  return (
-    <>
-      <SuperAdminAuthListener />
-      <Outlet />
-    </>
-  )
-}

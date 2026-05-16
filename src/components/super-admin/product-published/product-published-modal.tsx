@@ -31,7 +31,7 @@ export function ProductPublishedModal({
       actions={
         <>
           <Link
-            to="/super-admin/products"
+            to="/admin/products"
             onClick={() => onOpenChange(false)}
             className={cn(
               buttonVariants(),
@@ -44,7 +44,7 @@ export function ProductPublishedModal({
           </Link>
 
           <Link
-            to="/super-admin/products"
+            to="/admin/products"
             onClick={() => onOpenChange(false)}
             className={cn(
               buttonVariants({ variant: "outline" }),

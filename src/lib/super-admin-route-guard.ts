@@ -1,28 +1,10 @@
-import { redirect } from "@tanstack/react-router"
-
-import {
-  shouldRedirectSuperAdminAuthenticatedGuest,
-  shouldRequireSuperAdminAuth,
-} from "@/lib/auth-guard"
-
-export const SUPER_ADMIN_LOGIN_PATH = "/super-admin/login"
-
-export function isSuperAdminPublicPath(pathname: string): boolean {
-  return pathname === SUPER_ADMIN_LOGIN_PATH
-}
-
-export function ensureSuperAdminRouteAccess(location: { pathname: string; href: string }) {
-  if (isSuperAdminPublicPath(location.pathname)) {
-    if (shouldRedirectSuperAdminAuthenticatedGuest()) {
-      throw redirect({ to: "/super-admin/dashboard" })
-    }
-    return
-  }
-
-  if (shouldRequireSuperAdminAuth()) {
-    throw redirect({
-      to: SUPER_ADMIN_LOGIN_PATH,
-      search: { redirect: location.pathname },
-    })
-  }
-}
+/**
+ * @deprecated Use @/lib/portal-route-guard
+ */
+export {
+  PORTAL_LOGIN_PATH as SUPER_ADMIN_LOGIN_PATH,
+  ensurePortalRouteAccess as ensureSuperAdminRouteAccess,
+  isPortalPublicPath as isSuperAdminPublicPath,
+  ensureAdminOperationsAccess,
+  ensureSuperAdminOperationsAccess,
+} from "@/lib/portal-route-guard"

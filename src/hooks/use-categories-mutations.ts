@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react"
 import { toast } from "sonner"
 
+import { getApiErrorToastMessage } from "@/api/types"
 import { categoriesService } from "@/services/categories"
 import type { LoadingState } from "@/types/loading"
 
@@ -17,8 +18,8 @@ export function useCategoriesMutations() {
       setLoadingState("success")
       return response
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create category"
-      toast.error(message)
+      const message = getApiErrorToastMessage(err, "Failed to create category")
+      if (message) toast.error(message)
       setLoadingState("error")
       throw err
     } finally {
@@ -34,8 +35,8 @@ export function useCategoriesMutations() {
       setLoadingState("success")
       return response
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update category"
-      toast.error(message)
+      const message = getApiErrorToastMessage(err, "Failed to update category")
+      if (message) toast.error(message)
       setLoadingState("error")
       throw err
     } finally {
@@ -51,8 +52,8 @@ export function useCategoriesMutations() {
       setLoadingState("success")
       return response
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to delete category"
-      toast.error(message)
+      const message = getApiErrorToastMessage(err, "Failed to delete category")
+      if (message) toast.error(message)
       setLoadingState("error")
       throw err
     } finally {

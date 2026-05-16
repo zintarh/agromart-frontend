@@ -6,15 +6,18 @@ import { CustomersTable } from "@/components/super-admin/customer-management/cus
 import { CustomersToolbar } from "@/components/super-admin/customer-management/customers-toolbar"
 import { AdminTableSkeleton } from "@/components/super-admin/shared/admin-table-skeleton"
 import { TablePagination } from "@/components/super-admin/shared/table-pagination"
+import { useDeleteUser } from "@/hooks/use-delete-user"
 import { usePromoteAdmin } from "@/hooks/use-promote-admin"
 import { usePaginatedFetch } from "@/hooks/use-paginated-fetch"
 import {
   fetchCustomersPage,
   type CustomerFilters,
 } from "@/lib/super-admin-table-api"
+import { canViewPortalUserDetails } from "@/lib/portal-roles"
 import { invalidateSuperAdminUsersCache } from "@/lib/super-admin-users-cache"
 import { isCustomerTab, type UserManagementTab } from "@/lib/super-admin-user-list"
 import type { Customer } from "@/components/super-admin/customer-management/mock-customers"
+import { useAdminUser } from "@/store/adminStore"
 
 const defaultFilters: CustomerFilters = {
   status: "all",
@@ -37,10 +40,15 @@ export function CustomersTableCard({
   refreshToken = 0,
   onMutated,
 }: CustomersTableCardProps) {
+  const portalUser = useAdminUser()
+  const allowUserDetailLinks = canViewPortalUserDetails(portalUser)
+
   const [filters, setFilters] = useState<CustomerFilters>(defaultFilters)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [promotingUserId, setPromotingUserId] = useState<string | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const { promote, isPromoting } = usePromoteAdmin()
+  const { deleteUser, isDeleting } = useDeleteUser()
 
   const fetchPage = useCallback(
     async (page: number, activeFilters: CustomerFilters) => {
@@ -74,6 +82,24 @@ export function CustomersTableCard({
     }
   }
 
+  const handleDelete = async (customer: Customer) => {
+    if (
+      !window.confirm(
+        `Delete ${customer.name}? They will be removed and lose access to the platform.`
+      )
+    ) {
+      return
+    }
+    setDeletingUserId(customer.id)
+    try {
+      await deleteUser(Number(customer.id))
+      invalidateSuperAdminUsersCache(tab.role)
+      onMutated?.()
+    } finally {
+      setDeletingUserId(null)
+    }
+  }
+
   return (
     <div className="overflow-hidden rounded-2xl border border-[#E8E8E8] bg-white">
       <CustomersToolbar tab={tab} filters={filters} onFiltersChange={setFilters} />
@@ -96,9 +122,13 @@ export function CustomersTableCard({
         <CustomersTable
           customers={items}
           tab={tab}
+          allowUserDetailLinks={allowUserDetailLinks}
           onPromote={tab.role === "admin" ? handlePromote : undefined}
+          onDelete={tab.role !== "admin" ? handleDelete : undefined}
           isPromoting={isPromoting}
           promotingUserId={promotingUserId}
+          isDeleting={isDeleting}
+          deletingUserId={deletingUserId}
         />
       )}
 

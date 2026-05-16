@@ -44,4 +44,8 @@ export const superAdminUsersService = {
   async promoteToSuperAdmin(userId: number) {
     return superAdminUsersApi.promoteToSuperAdmin(userId)
   },
+
+  async deactivateUser(userId: number) {
+    return superAdminUsersApi.deactivateUser(userId)
+  },
 }

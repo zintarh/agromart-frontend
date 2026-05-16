@@ -1,15 +1,18 @@
 import { useRouterState } from "@tanstack/react-router"
 
 import {
+  getPortalNavSections,
   isSidebarNavActive,
-  superAdminNavSections,
 } from "@/components/super-admin/sidebar/sidebar-nav-config"
 import { SidebarNavItem } from "@/components/super-admin/sidebar/sidebar-nav-item"
 import { SidebarNavSection } from "@/components/super-admin/sidebar/sidebar-nav-section"
 import { SidebarUserProfile } from "@/components/super-admin/sidebar/sidebar-user-profile"
+import { useAdminUser } from "@/store/adminStore"
 
 export function SuperAdminSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const user = useAdminUser()
+  const navSections = getPortalNavSections(user)
 
   return (
     <aside className="flex h-full max-h-full w-[240px] shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-border/60">
@@ -23,7 +26,7 @@ export function SuperAdminSidebar() {
       </div>
 
       <nav className="flex min-h-0 flex-1 flex-col gap-5 overflow-hidden px-3 pb-4">
-        {superAdminNavSections.map((section) => (
+        {navSections.map((section) => (
           <SidebarNavSection key={section.title} title={section.title}>
             {section.items.map((item) => (
               <SidebarNavItem
@@ -31,7 +34,7 @@ export function SuperAdminSidebar() {
                 label={item.label}
                 icon={item.icon}
                 to={item.to}
-                isActive={isSidebarNavActive(pathname, item.to)}
+                isActive={isSidebarNavActive(pathname, item.to, user)}
               />
             ))}
           </SidebarNavSection>

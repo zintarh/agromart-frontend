@@ -1,32 +1,21 @@
 import { Download } from "lucide-react"
 
-import { PageBreadcrumb, type BreadcrumbItem } from "@/components/super-admin/shared/page-breadcrumb"
-import { PrimaryActionButton } from "@/components/super-admin/shared/primary-action-button"
+import { InviteUserButton } from "@/components/super-admin/invite-user/invite-user-button"
 import { Button } from "@/components/ui/button"
 import type { UserManagementTabId } from "@/lib/super-admin-user-list"
 
 type CustomerPageActionsProps = {
-  isAddUser: boolean
   activeTabId?: UserManagementTabId
-  onBackToUsers?: () => void
+  onInviteSuccess?: () => void
 }
 
 export function CustomerPageActions({
-  isAddUser,
   activeTabId = "customers",
+  onInviteSuccess,
 }: CustomerPageActionsProps) {
-  const breadcrumbItems: BreadcrumbItem[] = [
-    { label: "Users", to: "/super-admin/users" },
-    { label: "Add New User" },
-  ]
-
   return (
     <div className="flex items-center justify-between gap-4">
-      {isAddUser ? (
-        <PageBreadcrumb items={breadcrumbItems} />
-      ) : (
-        <span className="sr-only">User list</span>
-      )}
+      <span className="sr-only">User list</span>
 
       <div className="ml-auto flex items-center gap-3">
         <Button
@@ -37,13 +26,7 @@ export function CustomerPageActions({
           Export CSV
           <Download className="size-4 text-muted-foreground" />
         </Button>
-        {!isAddUser && (
-          <PrimaryActionButton
-            label="Add Users"
-            to="/super-admin/users"
-            search={{ mode: "add-user", tab: activeTabId }}
-          />
-        )}
+        <InviteUserButton activeTabId={activeTabId} onSuccess={onInviteSuccess} />
       </div>
     </div>
   )

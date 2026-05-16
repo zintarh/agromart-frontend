@@ -68,7 +68,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
             <TableCell className="pr-5">
               <div className="flex items-center gap-2">
                 <Link
-                  to="/super-admin/products/new"
+                  to="/admin/products/new"
                   className={cn(
                     buttonVariants({ variant: "outline", size: "sm" }),
                     "h-8 rounded-md border-border bg-white px-3 text-xs font-medium"

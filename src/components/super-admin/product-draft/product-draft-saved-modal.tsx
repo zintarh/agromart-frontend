@@ -50,7 +50,7 @@ export function ProductDraftSavedModal({
           </button>
 
           <Link
-            to="/super-admin/products"
+            to="/admin/products"
             onClick={() => onOpenChange(false)}
             className={cn(
               buttonVariants({ variant: "outline" }),

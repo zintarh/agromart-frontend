@@ -66,16 +66,18 @@ export function UserSummaryCard({ profile }: UserSummaryCardProps) {
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatMetricBox value={String(profile.orders)} label="Orders" variant="mint" />
         <StatMetricBox value={profile.totalSpentShort} label="Total Spent" variant="peach" />
-        <StatMetricBox
-          value={
-            <span className="inline-flex items-center gap-1">
-              <Star className="size-5 fill-[#E6B800] text-[#E6B800]" strokeWidth={0} />
-              {profile.rating.toFixed(1)}
-            </span>
-          }
-          label="Rating"
-          variant="yellow"
-        />
+        {profile.rating > 0 ? (
+          <StatMetricBox
+            value={
+              <span className="inline-flex items-center gap-1">
+                <Star className="size-5 fill-[#E6B800] text-[#E6B800]" strokeWidth={0} />
+                {profile.rating.toFixed(1)}
+              </span>
+            }
+            label="Rating"
+            variant="yellow"
+          />
+        ) : null}
       </div>
     </ContentPanelCard>
   )

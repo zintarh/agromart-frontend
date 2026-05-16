@@ -20,9 +20,13 @@ import { cn } from "@/lib/utils"
 type CustomersTableProps = {
   customers: Customer[]
   tab: UserManagementTab
+  allowUserDetailLinks?: boolean
   onPromote?: (customer: Customer) => void
+  onDelete?: (customer: Customer) => void
   isPromoting?: boolean
   promotingUserId?: string | null
+  isDeleting?: boolean
+  deletingUserId?: string | null
 }
 
 const headerClass =
@@ -31,9 +35,13 @@ const headerClass =
 export function CustomersTable({
   customers,
   tab,
+  allowUserDetailLinks = true,
   onPromote,
+  onDelete,
   isPromoting = false,
   promotingUserId = null,
+  isDeleting = false,
+  deletingUserId = null,
 }: CustomersTableProps) {
   const showCommerceColumns = isCustomerTab(tab)
   const showPromote = tab.role === "admin"
@@ -63,21 +71,15 @@ export function CustomersTable({
         {customers.map((customer) => {
           const isActive = customer.status === "active"
           const isPromotingRow = isPromoting && promotingUserId === customer.id
+          const isDeletingRow = isDeleting && deletingUserId === customer.id
 
           return (
             <TableRow key={customer.id} className="border-[#EBEBEB] hover:bg-transparent">
               <TableCell className="px-6 py-4">
-                <Link
-                  to="/super-admin/users/$userId"
-                  params={{ userId: customer.id }}
-                  className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
-                >
-                  <CustomerAvatar
-                    initials={customer.initials}
-                    color={customer.avatarColor}
-                  />
-                  <span className="text-sm font-medium text-foreground">{customer.name}</span>
-                </Link>
+                <UserNameCell
+                  customer={customer}
+                  allowUserDetailLinks={allowUserDetailLinks}
+                />
               </TableCell>
               <TableCell className="px-4 py-4 text-sm text-muted-foreground">
                 {customer.email}
@@ -108,16 +110,18 @@ export function CustomersTable({
               )}
               <TableCell className="pr-6 pl-4 py-4">
                 <div className="flex items-center gap-2">
-                  <Link
-                    to="/super-admin/users/$userId"
-                    params={{ userId: customer.id }}
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "sm" }),
-                      "h-8 rounded-lg border-[#E8E8E8] bg-white px-3.5 text-xs font-medium text-foreground shadow-none hover:bg-white"
-                    )}
-                  >
-                    View
-                  </Link>
+                  {allowUserDetailLinks ? (
+                    <Link
+                      to="/admin/users/$userId"
+                      params={{ userId: customer.id }}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "sm" }),
+                        "h-8 rounded-lg border-[#E8E8E8] bg-white px-3.5 text-xs font-medium text-foreground shadow-none hover:bg-white"
+                      )}
+                    >
+                      View
+                    </Link>
+                  ) : null}
                   {showPromote ? (
                     <Button
                       type="button"
@@ -134,6 +138,8 @@ export function CustomersTable({
                       type="button"
                       variant="outline"
                       size="sm"
+                      disabled={isDeleting || !isActive}
+                      onClick={() => onDelete?.(customer)}
                       className={cn(
                         "h-8 rounded-lg px-3.5 text-xs font-medium shadow-none",
                         isActive
@@ -141,7 +147,7 @@ export function CustomersTable({
                           : "border-[#2D5A27]/30 bg-white text-[#2D5A27] hover:bg-white"
                       )}
                     >
-                      {isActive ? "Suspend" : "Enable"}
+                      {isDeletingRow ? "Deleting…" : isActive ? "Delete" : "Deleted"}
                     </Button>
                   )}
                 </div>
@@ -153,3 +159,33 @@ export function CustomersTable({
     </Table>
   )
 }
+
+function UserNameCell({
+  customer,
+  allowUserDetailLinks,
+}: {
+  customer: Customer
+  allowUserDetailLinks: boolean
+}) {
+  const content = (
+    <>
+      <CustomerAvatar initials={customer.initials} color={customer.avatarColor} />
+      <span className="text-sm font-medium text-foreground">{customer.name}</span>
+    </>
+  )
+
+  if (!allowUserDetailLinks) {
+    return <div className="flex items-center gap-2.5">{content}</div>
+  }
+
+  return (
+    <Link
+      to="/admin/users/$userId"
+      params={{ userId: customer.id }}
+      className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
+    >
+      {content}
+    </Link>
+  )
+}
+

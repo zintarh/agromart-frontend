@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { devtools, persist } from "zustand/middleware"
 import type { User } from "@/api/types"
+import { logAuthUser } from "@/lib/log-auth-user"
 import { getUser, isAuthenticated } from "@/utils/storage"
 
 interface SessionState {
@@ -16,7 +17,10 @@ export const useSessionStore = create<SessionState>()(
       (set) => ({
         user: null,
         isAuthenticated: false,
-        setSession: (user) => set({ user, isAuthenticated: !!user }),
+        setSession: (user) => {
+          logAuthUser("Customer session", user)
+          set({ user, isAuthenticated: !!user })
+        },
         clearSession: () => set({ user: null, isAuthenticated: false }),
       }),
       {

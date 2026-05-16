@@ -1,5 +1,5 @@
 import { fetchCategoriesList } from "@/api/categories-list-request"
-import { superAdminApiClient } from "@/api/super-admin-client"
+import { portalApiClient } from "@/api/portal-api-client"
 import type {
   CategoriesListParams,
   CategoriesListResponse,
@@ -7,16 +7,16 @@ import type {
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from "@/api/category-types"
-import type { ApiResponse } from "@/api/types"
-import { getSuperAdminAccessToken } from "@/utils/super-admin-storage"
+import { ApiError } from "@/api/types"
+import type { ApiErrorResponse, ApiResponse } from "@/api/types"
+import { getPortalAuthHeaders, getPortalAuthorizationHeader } from "@/lib/portal-auth"
 
 const CATEGORIES_BASE = "/categories"
 const CATEGORIES_LIST_PROXY = "/api/categories/list"
 const PROXY_TIMEOUT_MS = 8_000
 
 async function fetchCategoriesListViaProxy(
-  params: CategoriesListParams,
-  authorization?: string
+  params: CategoriesListParams
 ): Promise<CategoriesListResponse> {
   const query = new URLSearchParams({
     page: String(params.page ?? 1),
@@ -24,20 +24,12 @@ async function fetchCategoriesListViaProxy(
     sort_order: params.sort_order ?? "desc",
   })
 
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  }
-
-  if (authorization) {
-    headers.Authorization = authorization
-  }
-
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS)
 
   try {
     const response = await fetch(`${CATEGORIES_LIST_PROXY}?${query}`, {
-      headers,
+      headers: getPortalAuthHeaders({ Accept: "application/json" }),
       signal: controller.signal,
     })
 
@@ -46,45 +38,65 @@ async function fetchCategoriesListViaProxy(
       throw new Error("Categories proxy returned a non-JSON response")
     }
 
-    const payload = (await response.json()) as CategoriesListResponse
+    const payload = (await response.json()) as CategoriesListResponse & ApiErrorResponse
 
     if (!response.ok) {
-      throw new Error(payload?.message || `Request failed with status ${response.status}`)
+      throw new ApiError(
+        response.status,
+        payload?.message || `Request failed with status ${response.status}`,
+        payload as ApiErrorResponse
+      )
     }
 
-    return payload
+    return payload as CategoriesListResponse
   } finally {
     window.clearTimeout(timeoutId)
   }
 }
 
+function assertPortalAuth(): void {
+  if (!getPortalAuthorizationHeader()) {
+    throw new ApiError(
+      401,
+      "You are not signed in. Please log in again at the admin portal.",
+      { message: "Unauthorized", success: false }
+    )
+  }
+}
+
 export const categoriesApi = {
   async list(params: CategoriesListParams = {}): Promise<CategoriesListResponse> {
-    const token = getSuperAdminAccessToken()
-    const authorization = token ? `Bearer ${token}` : undefined
-
     try {
-      return await fetchCategoriesListViaProxy(params, authorization)
+      return await fetchCategoriesListViaProxy(params)
     } catch {
-      return fetchCategoriesList(params, authorization)
+      return fetchCategoriesList(params, getPortalAuthorizationHeader())
     }
   },
 
   create(data: CreateCategoryRequest): Promise<ApiResponse<CategoryRecord>> {
-    return superAdminApiClient
-      .post<ApiResponse<CategoryRecord>>(`${CATEGORIES_BASE}/create`, data)
+    assertPortalAuth()
+    return portalApiClient
+      .post<ApiResponse<CategoryRecord>>(`${CATEGORIES_BASE}/create`, data, {
+        headers: getPortalAuthHeaders(),
+      })
       .then((res) => res.data)
   },
 
   update(id: number, data: UpdateCategoryRequest): Promise<ApiResponse<CategoryRecord>> {
-    return superAdminApiClient
-      .patch<ApiResponse<CategoryRecord>>(`${CATEGORIES_BASE}/${id}`, data)
+    assertPortalAuth()
+    return portalApiClient
+      .patch<ApiResponse<CategoryRecord>>(`${CATEGORIES_BASE}/${id}`, data, {
+        headers: getPortalAuthHeaders(),
+      })
       .then((res) => res.data)
   },
 
   remove(id: number): Promise<ApiResponse> {
-    return superAdminApiClient
-      .delete<ApiResponse>(`${CATEGORIES_BASE}/${id}`)
+    assertPortalAuth()
+    return portalApiClient
+      .delete<ApiResponse>(`${CATEGORIES_BASE}/${id}`, {
+        headers: getPortalAuthHeaders(),
+      })
       .then((res) => res.data)
   },
 }

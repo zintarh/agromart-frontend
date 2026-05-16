@@ -48,7 +48,7 @@ export function RecentOrdersCard({ isLoading = false }: RecentOrdersCardProps) {
                   <td className="py-3.5">
                     {order.customerId ? (
                       <Link
-                        to="/super-admin/users/$userId"
+                        to="/admin/users/$userId"
                         params={{ userId: order.customerId }}
                         className="text-muted-foreground hover:text-[#2D5A27] hover:underline"
                       >

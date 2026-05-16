@@ -7,7 +7,7 @@ export function ProductCatalogContent() {
     <div className="space-y-4">
       <ProductStatsGrid />
       <div className="flex justify-end">
-        <PrimaryActionButton label="Add Product" to="/super-admin/products/new" />
+        <PrimaryActionButton label="Add Product" to="/admin/products/new" />
       </div>
       <ProductsTableCard />
     </div>

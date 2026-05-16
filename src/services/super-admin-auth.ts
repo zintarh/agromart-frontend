@@ -21,6 +21,8 @@ export const superAdminAuthService = {
       if (tokenData.user) {
         setSuperAdminUser(tokenData.user)
       }
+    } else if (import.meta.env.DEV) {
+      console.warn("[Auth] Login response did not include tokens", response)
     }
 
     return response

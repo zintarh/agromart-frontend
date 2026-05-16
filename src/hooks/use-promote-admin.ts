@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react"
 import { toast } from "sonner"
 
+import { getApiErrorToastMessage } from "@/api/types"
 import { superAdminUsersService } from "@/services/super-admin-users"
 import type { LoadingState } from "@/types/loading"
 
@@ -17,8 +18,8 @@ export function usePromoteAdmin() {
       setLoadingState("success")
       return response
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to promote user"
-      toast.error(message)
+      const message = getApiErrorToastMessage(err, "Failed to promote user")
+      if (message) toast.error(message)
       setLoadingState("error")
       throw err
     } finally {

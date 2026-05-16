@@ -2,11 +2,12 @@ import { useState } from "react"
 
 import { extractAuthPayload } from "@/lib/extract-auth-payload"
 import { superAdminAuthService } from "@/services/super-admin-auth"
-import { useSuperAdminSessionStore } from "@/store/superAdminSessionStore"
+import { useAdminStore } from "@/store/adminStore"
+import type { AdminUser } from "@/types/admin-user"
 import type { LoadingState } from "@/types/loading"
 
 export function useSuperAdminLogin() {
-  const setSession = useSuperAdminSessionStore((state) => state.setSession)
+  const setSession = useAdminStore((state) => state.setSession)
   const [loadingState, setLoadingState] = useState<LoadingState>("idle")
   const [error, setError] = useState<string | null>(null)
 
@@ -15,7 +16,7 @@ export function useSuperAdminLogin() {
     setError(null)
     try {
       const response = await superAdminAuthService.login(email, password)
-      setSession(extractAuthPayload(response)?.user ?? null)
+      setSession((extractAuthPayload(response)?.user as AdminUser | undefined) ?? null)
       setLoadingState("success")
       return response
     } catch (err: unknown) {
