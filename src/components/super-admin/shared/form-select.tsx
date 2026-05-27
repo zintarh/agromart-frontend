@@ -16,6 +16,7 @@ type FormSelectProps = {
   className?: string
   onValueChange?: (value: string) => void
   triggerIcon?: "chevron" | "chevrons"
+  disabled?: boolean
 }
 
 export function FormSelect({
@@ -26,6 +27,7 @@ export function FormSelect({
   className,
   onValueChange,
   triggerIcon,
+  disabled,
 }: FormSelectProps) {
   const [internalValue, setInternalValue] = useState(defaultValue)
   const currentValue = value ?? internalValue
@@ -42,6 +44,7 @@ export function FormSelect({
       onValueChange={handleValueChange}
       placeholder={placeholder}
       triggerIcon={triggerIcon}
+      disabled={disabled}
       className={cn(className)}
     />
   )

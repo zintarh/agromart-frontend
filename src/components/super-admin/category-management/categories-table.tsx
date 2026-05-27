@@ -1,6 +1,5 @@
-import { Pencil, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
-import { formatCategoryDate } from "@/lib/category-utils"
 import type { CategoryRow } from "@/lib/categories-table-api"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,14 +14,14 @@ import { cn } from "@/lib/utils"
 
 type CategoriesTableProps = {
   categories: CategoryRow[]
-  onEdit: (category: CategoryRow) => void
+  onEdit?: (category: CategoryRow) => void
   onDelete: (category: CategoryRow) => void
 }
 
 const headerClass =
   "h-11 px-6 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
 
-export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTableProps) {
+export function CategoriesTable({ categories, onDelete }: CategoriesTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -30,24 +29,20 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
           <TableHead className={headerClass}>ID</TableHead>
           <TableHead className={cn(headerClass, "px-4")}>Category Name</TableHead>
           <TableHead className={cn(headerClass, "px-4")}>Slug</TableHead>
-          <TableHead className={cn(headerClass, "px-4")}>Created</TableHead>
           <TableHead className={cn(headerClass, "pr-6 pl-4")}>Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <TableRow key={category.id} className="border-[#EBEBEB] hover:bg-transparent">
-            <TableCell className="px-6 py-4 text-sm text-muted-foreground">{category.id}</TableCell>
+            <TableCell className="px-6 py-4 text-sm text-muted-foreground">{index + 1}</TableCell>
             <TableCell className="px-4 py-4 text-sm font-medium text-foreground">
               {category.name}
             </TableCell>
             <TableCell className="px-4 py-4 text-sm text-muted-foreground">{category.slug}</TableCell>
-            <TableCell className="px-4 py-4 text-sm text-muted-foreground">
-              {formatCategoryDate(category.created_at)}
-            </TableCell>
             <TableCell className="pr-6 pl-4 py-4">
               <div className="flex items-center gap-2">
-                <Button
+                {/* <Button
                   type="button"
                   variant="outline"
                   size="sm"
@@ -56,8 +51,8 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
                 >
                   <Pencil className="size-3.5" />
                   Edit
-                </Button>
-                <Button
+                </Button> */}
+<Button
                   type="button"
                   variant="outline"
                   size="sm"

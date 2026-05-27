@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
@@ -20,21 +19,17 @@ function PortalLoginPage() {
   const navigate = Route.useNavigate()
   const { redirect: redirectTo } = Route.useSearch()
   const { login, loadingState, error, clearError } = usePortalLogin()
-  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleSubmit = async (email: string, password: string) => {
-    setSubmitError(null)
+    clearError()
     try {
       await login(email, password)
       const role = useAdminStore.getState().user?.role
       const destination =
         redirectTo && redirectTo.startsWith("/admin") ? redirectTo : getPortalHomePath(role)
       void navigate({ to: destination })
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Login failed. Please check your credentials."
-      setSubmitError(message)
-      throw err
+    } catch {
+      // Error is already handled in the hook and stored in state
     }
   }
 
@@ -44,12 +39,9 @@ function PortalLoginPage() {
       subtitle="Log in to the AgroMart admin portal"
       isLoading={loadingState === "loading"}
       error={error}
-      submitError={submitError}
+      submitError={null}
       onSubmit={handleSubmit}
-      onClearError={() => {
-        clearError()
-        setSubmitError(null)
-      }}
+      onClearError={clearError}
       showSocialAuth={false}
       showSignUpLink={false}
     />

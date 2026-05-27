@@ -6,7 +6,12 @@ import { canAccessPortal } from "@/lib/portal-roles"
 import { getPortalAccessToken } from "@/lib/portal-auth"
 import type { AdminUser } from "@/types/admin-user"
 import { getUser } from "@/utils/storage"
+import { getSuperAdminUser } from "@/utils/super-admin-storage"
 import { clearPortalTokens } from "@/lib/portal-auth"
+
+function getStoredAdminUser(): AdminUser | null {
+  return (getUser() as AdminUser | null) ?? getSuperAdminUser<AdminUser>()
+}
 
 interface AdminState {
   user: AdminUser | null
@@ -15,7 +20,7 @@ interface AdminState {
   clearSession: () => void
 }
 
-const initialUser = getUser() as AdminUser | null
+const initialUser = getStoredAdminUser()
 
 export const useAdminStore = create<AdminState>()(
   devtools(
@@ -43,7 +48,7 @@ export const useAdminStore = create<AdminState>()(
         }),
         onRehydrateStorage: () => (state) => {
           if (!state) return
-          const user = getUser() as AdminUser | null
+          const user = getStoredAdminUser()
           if (getPortalAccessToken() && canAccessPortal(user)) {
             state.setSession(user)
           }

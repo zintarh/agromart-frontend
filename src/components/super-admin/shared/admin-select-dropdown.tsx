@@ -23,6 +23,7 @@ type AdminSelectDropdownProps = {
   className?: string
   align?: "start" | "center" | "end"
   triggerIcon?: "chevron" | "chevrons"
+  disabled?: boolean
 }
 
 export function AdminSelectDropdown({
@@ -33,6 +34,7 @@ export function AdminSelectDropdown({
   className,
   align = "start",
   triggerIcon = "chevron",
+  disabled = false,
 }: AdminSelectDropdownProps) {
   const TriggerIcon = triggerIcon === "chevrons" ? ChevronsUpDown : ChevronDown
   const selected = options.find((option) => option.value === value)
@@ -42,8 +44,10 @@ export function AdminSelectDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger
         type="button"
+        disabled={disabled}
         className={cn(
           "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-border bg-white px-4 text-sm font-medium text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+          disabled && "cursor-not-allowed opacity-50",
           className
         )}
       >

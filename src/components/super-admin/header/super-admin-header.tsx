@@ -3,6 +3,7 @@ import { Bell } from "lucide-react"
 type SuperAdminHeaderProps = {
   title: string
   subtitle: string
+  belowTitle?: React.ReactNode
   actions?: React.ReactNode
   showNotifications?: boolean
 }
@@ -10,16 +11,18 @@ type SuperAdminHeaderProps = {
 export function SuperAdminHeader({
   title,
   subtitle,
+  belowTitle,
   actions,
   showNotifications = true,
 }: SuperAdminHeaderProps) {
   return (
     <header className="flex shrink-0 items-start justify-between gap-4">
-      <div>
+      <div className="min-w-0">
         <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
           {title}
         </h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
+        {belowTitle ? <div className="mt-2">{belowTitle}</div> : null}
       </div>
 
       <div className="flex shrink-0 items-center gap-3">

@@ -31,6 +31,11 @@ export function canAccessSuperAdminOperations(user: AdminUser | null | undefined
   return isSuperAdminRole(user?.role)
 }
 
+/** User management — super_admin only (GET /super-admin/users). */
+export function canAccessUsersManagement(user: AdminUser | null | undefined): boolean {
+  return canAccessSuperAdminOperations(user)
+}
+
 /** Super admins cannot open per-user profile detail (GET /user/profile is user-role only). */
 export function canViewPortalUserDetails(user: AdminUser | null | undefined): boolean {
   return canAccessPortal(user) && !isSuperAdminRole(user?.role)

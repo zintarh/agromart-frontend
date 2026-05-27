@@ -1,6 +1,3 @@
-import type { Customer } from "@/components/super-admin/customer-management/mock-customers"
-import type { SuperAdminUserListRole } from "@/lib/super-admin-user-list"
-import { loadSuperAdminUsersByRole } from "@/lib/super-admin-users-cache"
 import type { Product } from "@/components/super-admin/product-catalog/mock-products"
 import { products } from "@/components/super-admin/product-catalog/mock-products"
 import { ADMIN_TABLE_PAGE_SIZE } from "@/lib/pagination"
@@ -34,35 +31,6 @@ function getProductStatus(product: Product) {
   return "active"
 }
 
-function filterCustomers(all: Customer[], filters: CustomerFilters) {
-  let result = all
-
-  if (filters.status !== "all") {
-    result = result.filter((customer) => customer.status === filters.status)
-  }
-
-  if (filters.dateRange !== "all") {
-    result = result.filter((customer) => {
-      if (customer.createdAt) {
-        return customer.createdAt.includes(filters.dateRange)
-      }
-      return customer.joined.includes(filters.dateRange)
-    })
-  }
-
-  if (filters.search.trim()) {
-    const query = filters.search.trim().toLowerCase()
-    result = result.filter(
-      (customer) =>
-        customer.name.toLowerCase().includes(query) ||
-        customer.email.toLowerCase().includes(query) ||
-        customer.phone.includes(query)
-    )
-  }
-
-  return result
-}
-
 function filterProducts(all: Product[], filters: ProductFilters) {
   let result = all
 
@@ -89,40 +57,6 @@ function filterProducts(all: Product[], filters: ProductFilters) {
   }
 
   return result
-}
-
-export type CustomerStatsSummary = {
-  total: number
-  active: number
-  suspended: number
-  verified: number
-}
-
-export async function fetchCustomerStats(
-  role: SuperAdminUserListRole = "user"
-): Promise<CustomerStatsSummary> {
-  const all = await loadSuperAdminUsersByRole(role)
-  const active = all.filter((customer) => customer.status === "active").length
-  const verified = all.filter((customer) => customer.emailVerified).length
-  return {
-    total: all.length,
-    active,
-    suspended: all.length - active,
-    verified,
-  }
-}
-
-export async function fetchCustomersPage(
-  page: number,
-  filters: CustomerFilters,
-  role: SuperAdminUserListRole = "user"
-): Promise<PaginatedResult<Customer>> {
-  const all = await loadSuperAdminUsersByRole(role)
-  const filtered = filterCustomers(all, filters)
-  return {
-    items: paginateSlice(filtered, page),
-    total: filtered.length,
-  }
 }
 
 export type ProductStatsSummary = {

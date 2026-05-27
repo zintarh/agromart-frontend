@@ -1,13 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { authService } from "@/services/auth"
 import { useAdminStore } from "@/store/adminStore"
 import { useSessionStore } from "@/store/sessionStore"
 import type { AdminUser } from "@/types/admin-user"
-import type { LoadingState } from "@/types/loading"
 import { isPortalRole } from "@/lib/portal-roles"
 
 export type CompleteInvitePayload = {
@@ -20,43 +19,31 @@ export type CompleteInvitePayload = {
 }
 
 export function useCompleteInvite() {
-  const [loadingState, setLoadingState] = useState<LoadingState>("idle")
-  const [error, setError] = useState<string | null>(null)
-
-  const completeInvite = async (data: CompleteInvitePayload) => {
-    setLoadingState("loading")
-    setError(null)
-
-    try {
-      const response = await authService.completeInvite(data)
+  const { mutateAsync, isPending, error: rawError, reset } = useMutation({
+    mutationFn: (data: CompleteInvitePayload) => authService.completeInvite(data),
+    onSuccess: (response) => {
       const user = authService.getCurrentUser()
-
       if (user) {
         useSessionStore.getState().setSession(user)
         if (isPortalRole(user.role)) {
           useAdminStore.getState().setSession(user as AdminUser)
         }
       }
-
       toast.success(response.message ?? "Registration completed successfully")
-      setLoadingState("success")
-      return { response, user }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to complete registration. Please try again."
-      setError(message)
-      setLoadingState("error")
-      throw err
-    }
-  }
+    },
+  })
+
+  const completeInvite = (data: CompleteInvitePayload) =>
+    mutateAsync(data).then((response) => ({ response, user: authService.getCurrentUser() }))
+
+  const error = rawError instanceof Error
+    ? rawError.message
+    : rawError ? "Failed to complete registration. Please try again." : null
 
   return {
     completeInvite,
-    loadingState,
+    loadingState: isPending ? ("loading" as const) : ("idle" as const),
     error,
-    clearError: () => {
-      setError(null)
-      setLoadingState("idle")
-    },
+    clearError: reset,
   }
 }

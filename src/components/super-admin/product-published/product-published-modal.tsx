@@ -7,11 +7,21 @@ import { SuccessBadgeIcon } from "@/components/super-admin/product-published/suc
 import { ProductPreviewCard } from "@/components/super-admin/shared/product-preview-card"
 import { SuccessModalLayout } from "@/components/super-admin/shared/success-modal-layout"
 import { buttonVariants } from "@/components/ui/button"
+import { formatProductPreviewPrice } from "@/lib/product-preview-format"
 import { cn } from "@/lib/utils"
+
+export type PublishedProductSnapshot = {
+  name: string
+  categoryName: string
+  unit: string
+  compareAtPrice?: string
+  imageUrl?: string
+}
 
 type ProductPublishedModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  product?: PublishedProductSnapshot | null
 }
 
 const actionButtonClass =
@@ -20,6 +30,7 @@ const actionButtonClass =
 export function ProductPublishedModal({
   open,
   onOpenChange,
+  product,
 }: ProductPublishedModalProps) {
   return (
     <SuccessModalLayout
@@ -27,7 +38,19 @@ export function ProductPublishedModal({
       icon={<SuccessBadgeIcon />}
       title="Product Published Successfully!"
       subtitle="Your product is now live on the marketplace and visible to customers."
-      preview={<ProductPreviewCard variant="published" />}
+      preview={
+        <ProductPreviewCard
+          variant="published"
+          name={product?.name}
+          category={product?.categoryName}
+          imageUrl={product?.imageUrl}
+          price={
+            product ? formatProductPreviewPrice(product.compareAtPrice, product.unit) : undefined
+          }
+          statusLabel="Status: Active"
+          timestampLabel="Published just now"
+        />
+      }
       actions={
         <>
           <Link

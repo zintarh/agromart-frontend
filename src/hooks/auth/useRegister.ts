@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
+
 import { authService } from "@/services/auth"
-import type { LoadingState } from "@/types/loading"
 
 type RegisterPayload = {
   first_name: string
@@ -12,31 +12,19 @@ type RegisterPayload = {
 }
 
 export function useRegister() {
-  const [loadingState, setLoadingState] = useState<LoadingState>("idle")
-  const [error, setError] = useState<string | null>(null)
+  const { mutateAsync, isPending, error: rawError, reset } = useMutation({
+    mutationFn: (data: RegisterPayload) => authService.register(data),
+  })
 
-  const register = async (data: RegisterPayload) => {
-    setLoadingState("loading")
-    setError(null)
-    try {
-      const response = await authService.register(data)
-      setLoadingState("success")
-      return response
-    } catch (err: any) {
-      const message = err?.message || "Registration failed. Please try again."
-      setError(message)
-      setLoadingState("error")
-      throw err
-    }
-  }
+  const register = (data: RegisterPayload) => mutateAsync(data)
+  const error = rawError instanceof Error
+    ? rawError.message
+    : rawError ? "Registration failed. Please try again." : null
 
   return {
     register,
-    loadingState,
+    loadingState: isPending ? ("loading" as const) : ("idle" as const),
     error,
-    clearError: () => {
-      setError(null)
-      setLoadingState("idle")
-    },
+    clearError: reset,
   }
 }

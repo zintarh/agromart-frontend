@@ -7,6 +7,7 @@ type SuperAdminLayoutProps = {
   children: React.ReactNode
   title: string
   subtitle: string
+  belowTitle?: React.ReactNode
   headerActions?: React.ReactNode
   showNotifications?: boolean
 }
@@ -15,6 +16,7 @@ export function SuperAdminLayout({
   children,
   title,
   subtitle,
+  belowTitle,
   headerActions,
   showNotifications,
 }: SuperAdminLayoutProps) {
@@ -26,6 +28,7 @@ export function SuperAdminLayout({
         <SuperAdminHeader
           title={title}
           subtitle={subtitle}
+          belowTitle={belowTitle}
           actions={headerActions}
           showNotifications={showNotifications}
         />

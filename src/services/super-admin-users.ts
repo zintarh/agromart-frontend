@@ -2,21 +2,34 @@ import { superAdminUsersApi } from "@/api/super-admin-users"
 import type { SuperAdminUserRecord } from "@/api/super-admin-types"
 import type { SuperAdminUserListRole } from "@/lib/super-admin-user-list"
 
-function extractUserList(data: unknown): SuperAdminUserRecord[] {
-  const list = Array.isArray(data)
-    ? data
-    : data && typeof data === "object" && "data" in data
-      ? (data as { data: unknown }).data
-      : null
+function extractUserList(payload: unknown): SuperAdminUserRecord[] {
+  if (Array.isArray(payload)) {
+    return payload as SuperAdminUserRecord[]
+  }
 
-  return Array.isArray(list) ? (list as SuperAdminUserRecord[]) : []
+  if (!payload || typeof payload !== "object") {
+    return []
+  }
+
+  const record = payload as Record<string, unknown>
+  const data = record.data
+
+  if (Array.isArray(data)) {
+    return data as SuperAdminUserRecord[]
+  }
+
+  if (data && typeof data === "object" && Array.isArray((data as { data?: unknown }).data)) {
+    return (data as { data: SuperAdminUserRecord[] }).data
+  }
+
+  return []
 }
 
 async function fetchList(
-  fetcher: () => Promise<{ data?: unknown }>
+  fetcher: () => Promise<unknown>
 ): Promise<SuperAdminUserRecord[]> {
   const response = await fetcher()
-  return extractUserList(response.data)
+  return extractUserList(response)
 }
 
 export const superAdminUsersService = {
@@ -32,13 +45,7 @@ export const superAdminUsersService = {
         return fetchList(() => superAdminUsersApi.listLogistics())
       case "super_admin":
         return fetchList(() => superAdminUsersApi.listSuperAdmins())
-      default:
-        return fetchList(() => superAdminUsersApi.listUsers())
     }
-  },
-
-  async listUsers(): Promise<SuperAdminUserRecord[]> {
-    return this.listByRole("user")
   },
 
   async promoteToSuperAdmin(userId: number) {

@@ -8,11 +8,14 @@ import { DraftSavedBadgeIcon } from "@/components/super-admin/product-draft/draf
 import { ProductPreviewCard } from "@/components/super-admin/shared/product-preview-card"
 import { SuccessModalLayout } from "@/components/super-admin/shared/success-modal-layout"
 import { buttonVariants } from "@/components/ui/button"
+import type { DraftProductSnapshot } from "@/lib/add-product-draft-snapshot"
+import { formatProductPreviewPrice } from "@/lib/product-preview-format"
 import { cn } from "@/lib/utils"
 
 type ProductDraftSavedModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  product?: DraftProductSnapshot | null
 }
 
 const actionButtonClass =
@@ -21,6 +24,7 @@ const actionButtonClass =
 export function ProductDraftSavedModal({
   open,
   onOpenChange,
+  product,
 }: ProductDraftSavedModalProps) {
   return (
     <SuccessModalLayout
@@ -28,12 +32,22 @@ export function ProductDraftSavedModal({
       icon={<DraftSavedBadgeIcon />}
       title="Product Saved to Drafts"
       titleClassName="font-heading text-2xl font-bold leading-tight tracking-tight text-[#2D5A27]"
-      subtitle={
-        <p className="text-sm text-blue-600 underline">
-          Your product is now live on the marketplace and visible to customers.
-        </p>
+      subtitle="Your product has been saved as a draft. You can continue editing or publish it later."
+      preview={
+        <ProductPreviewCard
+          variant="draft"
+          name={product?.name}
+          category={product?.categoryName}
+          imageUrl={product?.imageUrl}
+          price={
+            product
+              ? formatProductPreviewPrice(product.compareAtPrice, product.unit)
+              : undefined
+          }
+          statusLabel="Status: Draft"
+          timestampLabel="Saved just now"
+        />
       }
-      preview={<ProductPreviewCard variant="draft" />}
       actions={
         <>
           <button

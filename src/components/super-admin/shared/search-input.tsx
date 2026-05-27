@@ -46,7 +46,7 @@ export function SearchInput({
       <Input
         placeholder={placeholder}
         value={draft}
-        onChange={(event) => setDraft(event.target.value)}
+        onValueChange={(value) => setDraft(value)}
         className={cn(
           "h-10 border-border bg-white pl-9 shadow-none",
           inputClassName

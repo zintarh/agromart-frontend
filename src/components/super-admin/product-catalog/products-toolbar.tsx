@@ -1,28 +1,17 @@
 "use client"
 
+import { useEffect, useState } from "react"
+
 import { FilterDropdown } from "@/components/super-admin/shared/filter-dropdown"
 import { SearchInput } from "@/components/super-admin/shared/search-input"
-import type { ProductFilters } from "@/lib/super-admin-table-api"
-
-const categoryOptions = [
-  { value: "all", label: "All Categories" },
-  { value: "Vegetable", label: "Vegetable" },
-  { value: "Fruit", label: "Fruit" },
-  { value: "Grains", label: "Grains" },
-]
+import { fetchProductCategoryFilterOptions } from "@/lib/products-table-api"
+import type { ProductFilters } from "@/lib/product-catalog-types"
 
 const statusOptions = [
   { value: "all", label: "All Status" },
   { value: "active", label: "Active" },
-  { value: "low-stock", label: "Low Stock" },
-  { value: "out-of-stock", label: "Out of Stock" },
-]
-
-const vendorOptions = [
-  { value: "all", label: "All Vendors" },
-  { value: "GreenField Farm", label: "GreenField Farm" },
-  { value: "Sunrise Agro", label: "Sunrise Agro" },
-  { value: "Harvest Co-op", label: "Harvest Co-op" },
+  { value: "pending", label: "Pending" },
+  { value: "rejected", label: "Rejected" },
 ]
 
 type ProductsToolbarProps = {
@@ -31,12 +20,20 @@ type ProductsToolbarProps = {
 }
 
 export function ProductsToolbar({ filters, onFiltersChange }: ProductsToolbarProps) {
+  const [categoryOptions, setCategoryOptions] = useState([
+    { value: "all", label: "All Categories" },
+  ])
+
+  useEffect(() => {
+    void fetchProductCategoryFilterOptions().then(setCategoryOptions).catch(() => {})
+  }, [])
+
   return (
     <div className="border-b border-border px-5 py-4">
-      <p className="mb-3 text-sm font-semibold text-foreground">All product</p>
+      <p className="mb-3 text-sm font-semibold text-foreground">All products</p>
       <div className="flex flex-wrap items-center gap-3">
         <SearchInput
-          placeholder="Search products by name, category, or vendor"
+          placeholder="Search products by name or category"
           value={filters.search}
           onChange={(search) => onFiltersChange({ ...filters, search })}
         />
@@ -49,11 +46,6 @@ export function ProductsToolbar({ filters, onFiltersChange }: ProductsToolbarPro
           value={filters.status}
           options={statusOptions}
           onValueChange={(status) => onFiltersChange({ ...filters, status })}
-        />
-        <FilterDropdown
-          value={filters.vendor}
-          options={vendorOptions}
-          onValueChange={(vendor) => onFiltersChange({ ...filters, vendor })}
         />
       </div>
     </div>

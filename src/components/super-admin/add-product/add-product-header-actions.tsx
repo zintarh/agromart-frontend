@@ -5,9 +5,15 @@ import { cn } from "@/lib/utils"
 
 type AddProductHeaderActionsProps = {
   onPublish?: () => void
+  submitLabel?: string
+  isSubmitting?: boolean
 }
 
-export function AddProductHeaderActions({ onPublish }: AddProductHeaderActionsProps) {
+export function AddProductHeaderActions({
+  onPublish,
+  submitLabel = "Publish Product",
+  isSubmitting = false,
+}: AddProductHeaderActionsProps) {
   return (
     <>
       <Link
@@ -22,12 +28,13 @@ export function AddProductHeaderActions({ onPublish }: AddProductHeaderActionsPr
       <button
         type="button"
         onClick={onPublish}
+        disabled={isSubmitting}
         className={cn(
           buttonVariants(),
-          "h-10 rounded-lg bg-[#2D5A27] px-4 text-sm font-medium text-white hover:bg-[#2D5A27]/90"
+          "h-10 rounded-lg bg-[#2D5A27] px-4 text-sm font-medium text-white hover:bg-[#2D5A27]/90 disabled:opacity-60"
         )}
       >
-        Publish Product
+        {isSubmitting ? "Saving…" : submitLabel}
       </button>
     </>
   )

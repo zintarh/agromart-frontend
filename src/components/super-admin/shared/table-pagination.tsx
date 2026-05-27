@@ -1,17 +1,21 @@
-import { getPaginationRange } from "@/lib/pagination"
+import { ADMIN_TABLE_PAGE_SIZE, getPaginationRange } from "@/lib/pagination"
 import { cn } from "@/lib/utils"
 
 type TablePaginationProps = {
   currentPage: number
   totalPages: number
+  totalItems: number
   onPageChange: (page: number) => void
 }
 
 export function TablePagination({
   currentPage,
   totalPages,
+  totalItems,
   onPageChange,
 }: TablePaginationProps) {
+  if (totalItems <= ADMIN_TABLE_PAGE_SIZE) return null
+
   const pages = getPaginationRange(currentPage, totalPages)
 
   return (
@@ -29,12 +33,12 @@ export function TablePagination({
               if (!isEllipsis) onPageChange(page)
             }}
             className={cn(
-              "flex size-8 items-center justify-center rounded-md text-sm font-medium transition-colors",
+              "flex size-9 items-center justify-center rounded-lg text-sm font-medium transition-colors",
               isActive
                 ? "bg-[#2D5A27] text-white"
                 : isEllipsis
-                  ? "cursor-default text-muted-foreground"
-                  : "border border-border bg-white text-foreground hover:bg-muted/50"
+                  ? "cursor-default text-[#9CA3AF]"
+                  : "border border-[#E8E8E8] bg-white text-[#111827] hover:bg-[#FAFAFA]"
             )}
           >
             {page}

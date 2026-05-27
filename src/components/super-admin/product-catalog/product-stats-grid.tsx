@@ -1,80 +1,40 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 
 import { StatCard } from "@/components/super-admin/shared/stat-card"
 import { StatCardsSkeleton } from "@/components/super-admin/shared/stat-cards-skeleton"
-import { fetchProductStats } from "@/lib/super-admin-table-api"
+import { productQueryKeys } from "@/lib/product-query-keys"
+import { fetchProductStats } from "@/lib/products-table-api"
 
 export function ProductStatsGrid() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [stats, setStats] = useState({
-    total: "0",
-    active: "0",
-    outOfStock: "0",
-    lowStock: "0",
-    activePercent: "0% active",
+  const { data: summary, isLoading } = useQuery({
+    queryKey: productQueryKeys.stats(),
+    queryFn: fetchProductStats,
   })
 
-  useEffect(() => {
-    let cancelled = false
+  if (isLoading || !summary) return <StatCardsSkeleton />
 
-    void fetchProductStats()
-      .then((summary) => {
-        if (cancelled) return
-        const activePercent =
-          summary.total > 0
-            ? `${Math.round((summary.active / summary.total) * 100)}% active`
-            : "0% active"
-        setStats({
-          total: String(summary.total),
-          active: String(summary.active),
-          outOfStock: String(summary.outOfStock),
-          lowStock: String(summary.lowStock),
-          activePercent,
-        })
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setStats({
-            total: "0",
-            active: "0",
-            outOfStock: "0",
-            lowStock: "0",
-            activePercent: "0% active",
-          })
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsLoading(false)
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  if (isLoading) {
-    return <StatCardsSkeleton />
-  }
+  const activePercent =
+    summary.total > 0
+      ? `${Math.round((summary.active / summary.total) * 100)}% active`
+      : "0% active"
 
   return (
     <div className="grid grid-cols-4 gap-4">
-      <StatCard label="Total Product" value={stats.total} sublabel="All products" />
-      <StatCard label="Active" value={stats.active} sublabel={stats.activePercent} />
+      <StatCard label="Total Products" value={String(summary.total)} sublabel="All products" />
+      <StatCard label="Active" value={String(summary.active)} sublabel={activePercent} />
       <StatCard
-        label="Out of Stock"
-        value={stats.outOfStock}
-        sublabel="Need restocking"
-        sublabelClassName="text-destructive"
+        label="Pending"
+        value={String(summary.pending)}
+        sublabel="Awaiting review"
+        sublabelClassName="text-[#E67E22]"
       />
       <StatCard
-        label="Low Stock"
-        value={stats.lowStock}
-        sublabel="Below threshold"
-        sublabelClassName="text-[#E67E22]"
+        label="Rejected"
+        value={String(summary.rejected)}
+        sublabel="Not approved"
+        sublabelClassName="text-destructive"
       />
     </div>
   )

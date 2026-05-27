@@ -4,6 +4,8 @@ import { FormSectionCard } from "@/components/super-admin/shared/form-section-ca
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import type { AddProductFormValues } from "@/lib/add-product-form"
+import { useAdminUser } from "@/store/adminStore"
 
 type PublishingRowProps = {
   label: string
@@ -24,51 +26,89 @@ function PublishingRow({ label, description, trailing }: PublishingRowProps) {
 }
 
 type PublishingSectionProps = {
+  values: Pick<AddProductFormValues, "isFeatured" | "isOrganic">
+  onChange: (patch: Partial<AddProductFormValues>) => void
   onPublish?: () => void
   onSaveDraft?: () => void
+  isSubmitting?: boolean
+  statusDisplay?: React.ReactNode
+  submitLabel?: string
+  showSaveDraft?: boolean
 }
 
-export function PublishingSection({ onPublish, onSaveDraft }: PublishingSectionProps) {
+export function PublishingSection({
+  values,
+  onChange,
+  onPublish,
+  onSaveDraft,
+  isSubmitting = false,
+  statusDisplay,
+  submitLabel = "Publish Product",
+  showSaveDraft = true,
+}: PublishingSectionProps) {
+  const user = useAdminUser()
+  const isAdminRole = user?.role === "admin" || user?.role === "super_admin"
+
+  const defaultStatusBadge = (
+    <span className="rounded-full bg-[#FFF3E0] px-3 py-1 text-xs font-medium text-[#E67E22]">
+      Pending
+    </span>
+  )
+
   return (
     <FormSectionCard title="Publishing" className="flex h-full flex-col">
       <div className="flex-1">
         <PublishingRow
           label="Status"
           description="Control storefront visibility"
+          trailing={statusDisplay ?? defaultStatusBadge}
+        />
+        {isAdminRole && (
+          <PublishingRow
+            label="Feature on Homepage"
+            description="Show in banner and feature section"
+            trailing={
+              <Switch
+                checked={values.isFeatured}
+                onCheckedChange={(isFeatured) => onChange({ isFeatured })}
+                className="data-[state=checked]:bg-[#2D5A27]"
+              />
+            }
+          />
+        )}
+        <PublishingRow
+          label="Organic Product"
+          description="Mark this product as organic"
           trailing={
-            <span className="rounded-full bg-[#FFF3E0] px-3 py-1 text-xs font-medium text-[#E67E22]">
-              Pending
-            </span>
+            <Switch
+              checked={values.isOrganic}
+              onCheckedChange={(isOrganic) => onChange({ isOrganic })}
+              className="data-[state=checked]:bg-[#2D5A27]"
+            />
           }
-        />
-        <PublishingRow
-          label="Feature on Homepage"
-          description="Show in banner and feature section"
-          trailing={<Switch />}
-        />
-        <PublishingRow
-          label="Low Stock Alert"
-          description="Notify admin when below threshold"
-          trailing={<Switch defaultChecked className="data-checked:bg-[#2D5A27]" />}
         />
       </div>
 
       <div className="mt-6 space-y-3">
         <Button
           type="button"
+          disabled={isSubmitting}
           onClick={onPublish}
-          className="h-11 w-full rounded-lg bg-[#2D5A27] text-sm font-medium text-white hover:bg-[#2D5A27]/90"
+          className="h-11 w-full rounded-lg bg-[#2D5A27] text-sm font-medium text-white hover:bg-[#2D5A27]/90 disabled:opacity-60"
         >
-          Publish Product
+          {isSubmitting ? "Saving…" : submitLabel}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onSaveDraft}
-          className="h-11 w-full rounded-lg border-border bg-white text-sm font-medium"
-        >
-          Save as Draft
-        </Button>
+        {showSaveDraft && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={onSaveDraft}
+            className="h-11 w-full rounded-lg border-border bg-white text-sm font-medium disabled:opacity-60"
+          >
+            {isSubmitting ? "Saving…" : "Save as Draft"}
+          </Button>
+        )}
         <div className="pt-1 text-center">
           <Link
             to="/admin/products"

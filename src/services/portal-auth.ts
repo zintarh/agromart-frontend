@@ -1,8 +1,9 @@
 import { authApi } from "@/api/auth"
 import { extractAuthPayload } from "@/lib/extract-auth-payload"
 import { setPortalTokens } from "@/lib/portal-auth"
+import { persistPortalUser } from "@/lib/persist-portal-user"
 import type { AdminUser } from "@/types/admin-user"
-import { getUser, setUser } from "@/utils/storage"
+import { getUser } from "@/utils/storage"
 
 export const portalAuthService = {
   async login(email: string, password: string) {
@@ -12,7 +13,7 @@ export const portalAuthService = {
     if (tokenData?.access_token && tokenData?.refresh_token) {
       setPortalTokens(tokenData.access_token, tokenData.refresh_token)
       if (tokenData.user) {
-        setUser(tokenData.user)
+        persistPortalUser(tokenData.user as AdminUser)
       }
     }
 

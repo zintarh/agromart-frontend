@@ -45,6 +45,8 @@ import { Route as ApiUserProfileRouteImport } from './routes/api/user/profile'
 import { Route as ApiCategoriesListRouteImport } from './routes/api/categories/list'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products/new'
+import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products/$productId'
+import { Route as ApiFilesFileIdPreviewRouteImport } from './routes/api/files/$fileId/preview'
 
 const VerifyPhoneRoute = VerifyPhoneRouteImport.update({
   id: '/verify-phone',
@@ -226,6 +228,16 @@ const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminProductsProductIdRoute = AdminProductsProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
+const ApiFilesFileIdPreviewRoute = ApiFilesFileIdPreviewRouteImport.update({
+  id: '/api/files/$fileId/preview',
+  path: '/api/files/$fileId/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -257,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/super-admin/$': typeof SuperAdminSplatRoute
   '/super-admin/login': typeof SuperAdminLoginRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/api/categories/list': typeof ApiCategoriesListRoute
@@ -264,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories/': typeof AdminCategoriesIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
+  '/api/files/$fileId/preview': typeof ApiFilesFileIdPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -291,6 +305,7 @@ export interface FileRoutesByTo {
   '/super-admin/$': typeof SuperAdminSplatRoute
   '/super-admin/login': typeof SuperAdminLoginRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/api/categories/list': typeof ApiCategoriesListRoute
@@ -298,6 +313,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
+  '/api/files/$fileId/preview': typeof ApiFilesFileIdPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -330,6 +346,7 @@ export interface FileRoutesById {
   '/super-admin/$': typeof SuperAdminSplatRoute
   '/super-admin/login': typeof SuperAdminLoginRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/api/categories/list': typeof ApiCategoriesListRoute
@@ -337,6 +354,7 @@ export interface FileRoutesById {
   '/admin/categories/': typeof AdminCategoriesIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
+  '/api/files/$fileId/preview': typeof ApiFilesFileIdPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -370,6 +388,7 @@ export interface FileRouteTypes {
     | '/super-admin/$'
     | '/super-admin/login'
     | '/admin/'
+    | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/users/$userId'
     | '/api/categories/list'
@@ -377,6 +396,7 @@ export interface FileRouteTypes {
     | '/admin/categories/'
     | '/admin/products/'
     | '/admin/users/'
+    | '/api/files/$fileId/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -404,6 +424,7 @@ export interface FileRouteTypes {
     | '/super-admin/$'
     | '/super-admin/login'
     | '/admin'
+    | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/users/$userId'
     | '/api/categories/list'
@@ -411,6 +432,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/products'
     | '/admin/users'
+    | '/api/files/$fileId/preview'
   id:
     | '__root__'
     | '/'
@@ -442,6 +464,7 @@ export interface FileRouteTypes {
     | '/super-admin/$'
     | '/super-admin/login'
     | '/admin/'
+    | '/admin/products/$productId'
     | '/admin/products/new'
     | '/admin/users/$userId'
     | '/api/categories/list'
@@ -449,6 +472,7 @@ export interface FileRouteTypes {
     | '/admin/categories/'
     | '/admin/products/'
     | '/admin/users/'
+    | '/api/files/$fileId/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -465,6 +489,7 @@ export interface RootRouteChildren {
   VerifyPhoneRoute: typeof VerifyPhoneRoute
   ApiCategoriesListRoute: typeof ApiCategoriesListRoute
   ApiUserProfileRoute: typeof ApiUserProfileRoute
+  ApiFilesFileIdPreviewRoute: typeof ApiFilesFileIdPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -721,6 +746,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/products/$productId': {
+      id: '/admin/products/$productId'
+      path: '/$productId'
+      fullPath: '/admin/products/$productId'
+      preLoaderRoute: typeof AdminProductsProductIdRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
+    '/api/files/$fileId/preview': {
+      id: '/api/files/$fileId/preview'
+      path: '/api/files/$fileId/preview'
+      fullPath: '/api/files/$fileId/preview'
+      preLoaderRoute: typeof ApiFilesFileIdPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -737,11 +776,13 @@ const AdminCategoriesRouteWithChildren = AdminCategoriesRoute._addFileChildren(
 )
 
 interface AdminProductsRouteChildren {
+  AdminProductsProductIdRoute: typeof AdminProductsProductIdRoute
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
 }
 
 const AdminProductsRouteChildren: AdminProductsRouteChildren = {
+  AdminProductsProductIdRoute: AdminProductsProductIdRoute,
   AdminProductsNewRoute: AdminProductsNewRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
 }
@@ -832,6 +873,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyPhoneRoute: VerifyPhoneRoute,
   ApiCategoriesListRoute: ApiCategoriesListRoute,
   ApiUserProfileRoute: ApiUserProfileRoute,
+  ApiFilesFileIdPreviewRoute: ApiFilesFileIdPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -12,23 +12,16 @@ type CategoryCatalogContentProps = {
 
 export function CategoryCatalogContent({ initialAddOpen = false }: CategoryCatalogContentProps) {
   const [addModalOpen, setAddModalOpen] = useState(initialAddOpen)
-  const [refreshToken, setRefreshToken] = useState(0)
-
-  const handleMutated = () => {
-    setRefreshToken((token) => token + 1)
-  }
 
   return (
     <div className="space-y-4">
-      <CategoryStatsGrid refreshKey={refreshToken} />
+      <CategoryStatsGrid />
       <div className="flex justify-end">
         <PrimaryActionButton label="Add Category" onClick={() => setAddModalOpen(true)} />
       </div>
       <CategoriesTableCard
-        refreshToken={refreshToken}
         addModalOpen={addModalOpen}
         onAddModalOpenChange={setAddModalOpen}
-        onMutated={handleMutated}
       />
     </div>
   )

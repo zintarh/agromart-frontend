@@ -1,49 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
 
 import { extractAuthPayload } from "@/lib/extract-auth-payload"
+import { getLoginErrorMessage } from "@/lib/login-errors"
 import { isPortalRole } from "@/lib/portal-roles"
 import { portalAuthService } from "@/services/portal-auth"
 import { useAdminStore } from "@/store/adminStore"
 import type { AdminUser } from "@/types/admin-user"
-import type { LoadingState } from "@/types/loading"
 
 export function usePortalLogin() {
   const setSession = useAdminStore((state) => state.setSession)
-  const [loadingState, setLoadingState] = useState<LoadingState>("idle")
-  const [error, setError] = useState<string | null>(null)
 
-  const login = async (email: string, password: string) => {
-    setLoadingState("loading")
-    setError(null)
-    try {
-      const response = await portalAuthService.login(email, password)
+  const { mutateAsync, isPending, error: rawError, reset } = useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      portalAuthService.login(email, password),
+    onSuccess: (response) => {
       const user = extractAuthPayload(response)?.user as AdminUser | undefined
-
       if (!user || !isPortalRole(user.role)) {
         throw new Error("This account does not have access to the admin portal.")
       }
-
       setSession(user)
-      setLoadingState("success")
-      return response
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Login failed. Please check your credentials."
-      setError(message)
-      setLoadingState("error")
-      throw err
-    }
-  }
+    },
+  })
+
+  const login = (email: string, password: string) => mutateAsync({ email, password })
+  const error = rawError ? getLoginErrorMessage(rawError) : null
 
   return {
     login,
-    loadingState,
+    loadingState: isPending ? ("loading" as const) : ("idle" as const),
     error,
-    clearError: () => {
-      setError(null)
-      setLoadingState("idle")
-    },
+    clearError: reset,
   }
 }

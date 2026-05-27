@@ -1,41 +1,31 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { getApiErrorToastMessage } from "@/api/types"
 import type { SuperAdminInvitableRole } from "@/lib/super-admin-invitable-roles"
+import { superAdminQueryKeys } from "@/lib/super-admin-query-keys"
 import { superAdminInviteService } from "@/services/super-admin-invite"
-import type { LoadingState } from "@/types/loading"
 
 export function useInviteUser() {
-  const [loadingState, setLoadingState] = useState<LoadingState>("idle")
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const invite = useCallback(async (email: string, role: SuperAdminInvitableRole) => {
-    setLoadingState("loading")
-    setError(null)
-    try {
-      const response = await superAdminInviteService.invite({
-        email: email.trim().toLowerCase(),
-        role,
-      })
-      toast.success(response.message ?? "Invitation sent successfully")
-      setLoadingState("idle")
-      return response
-    } catch (err: unknown) {
-      const message = getApiErrorToastMessage(err, "Failed to send invitation")
-      if (message) toast.error(message)
-      setError(message)
-      setLoadingState("error")
-      throw err
-    }
-  }, [])
+  const { mutateAsync, isPending: isInviting, error: rawError, reset } = useMutation({
+    mutationFn: ({ email, role }: { email: string; role: SuperAdminInvitableRole }) =>
+      superAdminInviteService.invite({ email: email.trim().toLowerCase(), role }),
+    onSuccess: (res) => {
+      toast.success(res.message ?? "Invitation sent successfully")
+      queryClient.invalidateQueries({ queryKey: superAdminQueryKeys.users.all })
+    },
+    onError: (err: unknown) => {
+      const m = getApiErrorToastMessage(err, "Failed to send invitation")
+      if (m) toast.error(m)
+    },
+  })
 
-  return {
-    invite,
-    isInviting: loadingState === "loading",
-    error,
-    clearError: () => setError(null),
-  }
+  const invite = (email: string, role: SuperAdminInvitableRole) => mutateAsync({ email, role })
+  const error = rawError instanceof Error ? rawError.message : rawError ? String(rawError) : null
+
+  return { invite, isInviting, error, clearError: reset }
 }

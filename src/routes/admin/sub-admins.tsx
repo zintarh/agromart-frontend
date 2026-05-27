@@ -2,14 +2,11 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { ensureAdminOperationsAccess } from "@/lib/portal-route-guard"
 
-import { ComingSoonPage } from "@/components/super-admin/coming-soon/coming-soon-page"
-import { superAdminComingSoonMeta } from "@/lib/super-admin-coming-soon-meta"
-
-const meta = superAdminComingSoonMeta["sub-admins"]
+import { SubAdminManagementPage } from "@/components/super-admin/sub-admin-management/sub-admin-management-page"
 
 export const Route = createFileRoute("/admin/sub-admins")({
   beforeLoad: () => {
     ensureAdminOperationsAccess()
   },
-  component: () => <ComingSoonPage title={meta.title} subtitle={meta.subtitle} />,
+  component: SubAdminManagementPage,
 })

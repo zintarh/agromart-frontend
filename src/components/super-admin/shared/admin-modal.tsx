@@ -14,6 +14,11 @@ type AdminModalProps = {
   children: React.ReactNode
   footer?: React.ReactNode
   className?: string
+  headerClassName?: string
+  titleClassName?: string
+  bodyClassName?: string
+  footerClassName?: string
+  showCloseButton?: boolean
 }
 
 export function AdminModal({
@@ -23,6 +28,11 @@ export function AdminModal({
   children,
   footer,
   className,
+  headerClassName,
+  titleClassName,
+  bodyClassName,
+  footerClassName,
+  showCloseButton = true,
 }: AdminModalProps) {
   if (!open) return null
 
@@ -39,27 +49,43 @@ export function AdminModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="admin-modal-title"
-        className={cn(ADMIN_MODAL_PANEL_CLASS, "max-w-[min(640px,85vw)]", className)}
+        className={cn(ADMIN_MODAL_PANEL_CLASS, "max-w-[min(854px,90vw)]", className)}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-border px-8 py-5">
-          <h2 id="admin-modal-title" className="text-base font-semibold text-foreground">
+        <div
+          className={cn(
+            "border-b border-[#E5E7EB] px-8 py-5",
+            showCloseButton && "flex items-center justify-between",
+            headerClassName
+          )}
+        >
+          <h2
+            id="admin-modal-title"
+            className={cn("text-base font-semibold text-foreground", titleClassName)}
+          >
             {title}
           </h2>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            aria-label="Close"
-          >
-            <X className="size-5" strokeWidth={1.75} />
-          </button>
+          {showCloseButton ? (
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              aria-label="Close"
+            >
+              <X className="size-5" strokeWidth={1.75} />
+            </button>
+          ) : null}
         </div>
 
-        <div className="px-8 py-6">{children}</div>
+        <div className={cn("px-8 py-6", bodyClassName)}>{children}</div>
 
         {footer && (
-          <div className="flex justify-end gap-3 border-t border-border px-8 py-5">
+          <div
+            className={cn(
+              "flex justify-end gap-3 border-t border-border px-8 py-5",
+              footerClassName
+            )}
+          >
             {footer}
           </div>
         )}

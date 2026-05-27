@@ -109,10 +109,16 @@ export interface MeResponse extends ApiResponse {
 }
 
 // Error types
+export type ApiValidationIssue = {
+  field: string
+  message: string
+}
+
 export interface ApiErrorResponse {
   message: string
   success: false
   data?: any
+  errors?: ApiValidationIssue[]
 }
 
 export class ApiError extends Error {

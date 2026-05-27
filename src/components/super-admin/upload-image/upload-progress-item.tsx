@@ -1,12 +1,17 @@
-import { X } from "lucide-react"
+import { CheckCircle2, X, AlertCircle } from "lucide-react"
+
+import { cn } from "@/lib/utils"
 
 type UploadProgressItemProps = {
   fileName: string
   uploadedSize: string
   totalSize: string
   progress: number
+  status: "uploading" | "done" | "error"
   previewUrl?: string
+  errorMessage?: string
   onCancel?: () => void
+  isCancelling?: boolean
 }
 
 export function UploadProgressItem({
@@ -14,8 +19,11 @@ export function UploadProgressItem({
   uploadedSize,
   totalSize,
   progress,
+  status,
   previewUrl,
+  errorMessage,
   onCancel,
+  isCancelling = false,
 }: UploadProgressItemProps) {
   return (
     <div className="flex items-center gap-3">
@@ -33,15 +41,28 @@ export function UploadProgressItem({
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <p className="truncate text-sm font-semibold text-foreground">{fileName}</p>
-          <p className="shrink-0 text-xs font-medium text-foreground">{progress}%</p>
+          {status === "done" ? (
+            <CheckCircle2 className="size-4 shrink-0 text-[#2D5A27]" />
+          ) : status === "error" ? (
+            <AlertCircle className="size-4 shrink-0 text-destructive" />
+          ) : (
+            <p className="shrink-0 text-xs font-medium text-foreground">{progress}%</p>
+          )}
         </div>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {uploadedSize} / {totalSize}
-        </p>
+        {status === "error" ? (
+          <p className="mt-0.5 text-xs text-destructive">{errorMessage ?? "Upload failed"}</p>
+        ) : (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {status === "done" ? totalSize : `${uploadedSize} / ${totalSize}`}
+          </p>
+        )}
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-[#2D5A27] transition-all duration-300"
-            style={{ width: `${progress}%` }}
+            className={cn(
+              "h-full rounded-full transition-all duration-300",
+              status === "error" ? "bg-destructive" : "bg-[#2D5A27]"
+            )}
+            style={{ width: `${status === "error" ? 100 : progress}%` }}
           />
         </div>
       </div>
@@ -49,10 +70,15 @@ export function UploadProgressItem({
       <button
         type="button"
         onClick={onCancel}
-        className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-        aria-label={`Cancel upload for ${fileName}`}
+        disabled={isCancelling}
+        className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:cursor-wait disabled:opacity-50"
+        aria-label={`Remove ${fileName}`}
       >
-        <X className="size-3.5" strokeWidth={2} />
+        {isCancelling ? (
+          <span className="size-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        ) : (
+          <X className="size-3.5" strokeWidth={2} />
+        )}
       </button>
     </div>
   )

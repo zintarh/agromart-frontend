@@ -1,8 +1,7 @@
 import { isClient } from "@/lib/auth-guard"
 import {
-  canAccessAdminOperations,
   canAccessPortal,
-  canAccessSuperAdminOperations,
+  canAccessUsersManagement,
   canViewPortalUserDetails,
   getPortalHomePath,
 } from "@/lib/portal-roles"
@@ -15,23 +14,7 @@ export type PortalRouteAccessResult =
   | { action: "allow" }
   | { action: "redirect"; to: string; search?: Record<string, string> }
 
-const ADMIN_OPERATIONS_PREFIXES = [
-  "/admin/dashboard",
-  "/admin/orders",
-  "/admin/products",
-  "/admin/categories",
-  "/admin/delivery",
-  "/admin/payment",
-  "/admin/promo-codes",
-  "/admin/vendors",
-  "/admin/applications",
-  "/admin/sub-admins",
-  "/admin/reports",
-  "/admin/notifications",
-  "/admin/settings",
-] as const
-
-const SUPER_ADMIN_OPERATIONS_PREFIXES = ["/admin/users"] as const
+const USERS_MANAGEMENT_PREFIXES = ["/admin/users"] as const
 
 function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   return prefixes.some(
@@ -39,12 +22,8 @@ function matchesPrefix(pathname: string, prefixes: readonly string[]) {
   )
 }
 
-function requiresAdminOperations(pathname: string) {
-  return matchesPrefix(pathname, ADMIN_OPERATIONS_PREFIXES)
-}
-
 function requiresSuperAdminOperations(pathname: string) {
-  return matchesPrefix(pathname, SUPER_ADMIN_OPERATIONS_PREFIXES)
+  return matchesPrefix(pathname, USERS_MANAGEMENT_PREFIXES)
 }
 
 function isPortalUserDetailPath(pathname: string) {
@@ -82,11 +61,7 @@ export function resolvePortalRouteAccess(pathname: string): PortalRouteAccessRes
     return { action: "redirect", to: PORTAL_LOGIN_PATH }
   }
 
-  if (requiresAdminOperations(pathname) && !canAccessAdminOperations(user)) {
-    return { action: "redirect", to: getPortalHomePath(user?.role) }
-  }
-
-  if (requiresSuperAdminOperations(pathname) && !canAccessSuperAdminOperations(user)) {
+  if (requiresSuperAdminOperations(pathname) && !canAccessUsersManagement(user)) {
     return { action: "redirect", to: getPortalHomePath(user?.role) }
   }
 

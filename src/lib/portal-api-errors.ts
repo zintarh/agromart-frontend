@@ -12,6 +12,9 @@ export type PortalActionDeniedDetail = {
 
 export function getAxiosErrorMessage(error: AxiosError): string {
   const errorResponse = error.response?.data as ApiErrorResponse | undefined
+  if (errorResponse?.errors?.length) {
+    return errorResponse.errors.map((issue) => issue.message).join(". ")
+  }
   return errorResponse?.message || error.message || "An error occurred. Please try again."
 }
 

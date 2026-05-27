@@ -15,10 +15,7 @@ import {
   Wallet,
 } from "lucide-react"
 
-import {
-  canAccessAdminOperations,
-  canAccessSuperAdminOperations,
-} from "@/lib/portal-roles"
+import { isSuperAdminRole } from "@/lib/portal-roles"
 import type { AdminUser } from "@/types/admin-user"
 
 export type SidebarNavItemConfig = {
@@ -39,8 +36,8 @@ const NESTED_ACTIVE_PREFIXES = [
   "/admin/users",
 ] as const
 
-/** Operations routes — admin role only (catalog, orders, commerce). */
-const adminOperationsSections: SidebarNavSectionConfig[] = [
+/** All portal nav sections — shown to both admin and super_admin. */
+const allPortalSections: SidebarNavSectionConfig[] = [
   {
     title: "Overview",
     items: [
@@ -57,7 +54,10 @@ const adminOperationsSections: SidebarNavSectionConfig[] = [
   },
   {
     title: "People",
-    items: [{ label: "Delivery", icon: Truck, to: "/admin/delivery" }],
+    items: [
+      { label: "Users", icon: Users, to: "/admin/users" },
+      { label: "Delivery", icon: Truck, to: "/admin/delivery" },
+    ],
   },
   {
     title: "Commerce",
@@ -84,30 +84,16 @@ const adminOperationsSections: SidebarNavSectionConfig[] = [
   },
 ]
 
-/** User management — super_admin role only. */
-const superAdminSections: SidebarNavSectionConfig[] = [
-  {
-    title: "People",
-    items: [{ label: "Users", icon: Users, to: "/admin/users" }],
-  },
-]
+export function getPortalNavSections(user?: AdminUser | null): SidebarNavSectionConfig[] {
+  if (isSuperAdminRole(user?.role)) return allPortalSections
 
-export function getPortalNavSections(user: AdminUser | null | undefined): SidebarNavSectionConfig[] {
-  const sections: SidebarNavSectionConfig[] = []
-
-  if (canAccessSuperAdminOperations(user)) {
-    sections.push(...superAdminSections)
-  }
-
-  if (canAccessAdminOperations(user)) {
-    sections.push(...adminOperationsSections)
-  }
-
-  return sections
+  // admin role: exclude the Users item from People
+  return allPortalSections.map((section) =>
+    section.title === "People"
+      ? { ...section, items: section.items.filter((item) => item.to !== "/admin/users") }
+      : section
+  )
 }
-
-/** @deprecated Use getPortalNavSections(user) */
-export const superAdminNavSections = adminOperationsSections
 
 export function getPortalNavRoutes(user: AdminUser | null | undefined): string[] {
   return getPortalNavSections(user).flatMap((section) => section.items.map((item) => item.to))

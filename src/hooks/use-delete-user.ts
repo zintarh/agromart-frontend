@@ -1,34 +1,26 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { getApiErrorToastMessage } from "@/api/types"
+import { superAdminQueryKeys } from "@/lib/super-admin-query-keys"
 import { superAdminUsersService } from "@/services/super-admin-users"
-import type { LoadingState } from "@/types/loading"
 
 export function useDeleteUser() {
-  const [loadingState, setLoadingState] = useState<LoadingState>("idle")
+  const queryClient = useQueryClient()
 
-  const deleteUser = useCallback(async (userId: number) => {
-    setLoadingState("loading")
-    try {
-      const response = await superAdminUsersService.deactivateUser(userId)
-      toast.success(response.message ?? "User deleted")
-      setLoadingState("success")
-      return response
-    } catch (err: unknown) {
-      const message = getApiErrorToastMessage(err, "Failed to delete user")
-      if (message) toast.error(message)
-      setLoadingState("error")
-      throw err
-    } finally {
-      setLoadingState("idle")
-    }
-  }, [])
+  const { mutateAsync: deleteUser, isPending: isDeleting } = useMutation({
+    mutationFn: (userId: number) => superAdminUsersService.deactivateUser(userId),
+    onSuccess: (res) => {
+      toast.success(res.message ?? "User deactivated")
+      queryClient.invalidateQueries({ queryKey: superAdminQueryKeys.users.all })
+    },
+    onError: (err: unknown) => {
+      const m = getApiErrorToastMessage(err, "Failed to deactivate user")
+      if (m) toast.error(m)
+    },
+  })
 
-  return {
-    deleteUser,
-    isDeleting: loadingState === "loading",
-  }
+  return { deleteUser, isDeleting }
 }

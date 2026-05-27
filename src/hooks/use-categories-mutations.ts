@@ -1,70 +1,43 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { getApiErrorToastMessage } from "@/api/types"
+import { categoryQueryKeys } from "@/lib/category-query-keys"
 import { categoriesService } from "@/services/categories"
-import type { LoadingState } from "@/types/loading"
 
 export function useCategoriesMutations() {
-  const [loadingState, setLoadingState] = useState<LoadingState>("idle")
+  const queryClient = useQueryClient()
 
-  const createCategory = useCallback(async (categoryName: string) => {
-    setLoadingState("loading")
-    try {
-      const response = await categoriesService.create({ category_name: categoryName })
-      toast.success(response.message ?? "Category created successfully")
-      setLoadingState("success")
-      return response
-    } catch (err: unknown) {
-      const message = getApiErrorToastMessage(err, "Failed to create category")
-      if (message) toast.error(message)
-      setLoadingState("error")
-      throw err
-    } finally {
-      setLoadingState("idle")
-    }
-  }, [])
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: categoryQueryKeys.all })
 
-  const updateCategory = useCallback(async (id: number, categoryName: string) => {
-    setLoadingState("loading")
-    try {
-      const response = await categoriesService.update(id, { category_name: categoryName })
-      toast.success(response.message ?? "Category updated successfully")
-      setLoadingState("success")
-      return response
-    } catch (err: unknown) {
-      const message = getApiErrorToastMessage(err, "Failed to update category")
-      if (message) toast.error(message)
-      setLoadingState("error")
-      throw err
-    } finally {
-      setLoadingState("idle")
-    }
-  }, [])
+  const { mutateAsync: createCategory, isPending: isCreating } = useMutation({
+    mutationFn: (name: string) => categoriesService.create({ category_name: name }),
+    onSuccess: (res) => { toast.success(res.message ?? "Category created successfully"); invalidate() },
+    onError: (err: unknown) => { const m = getApiErrorToastMessage(err, "Failed to create category"); if (m) toast.error(m) },
+  })
 
-  const deleteCategory = useCallback(async (id: number) => {
-    setLoadingState("loading")
-    try {
-      const response = await categoriesService.remove(id)
-      toast.success(response.message ?? "Category deleted successfully")
-      setLoadingState("success")
-      return response
-    } catch (err: unknown) {
-      const message = getApiErrorToastMessage(err, "Failed to delete category")
-      if (message) toast.error(message)
-      setLoadingState("error")
-      throw err
-    } finally {
-      setLoadingState("idle")
-    }
-  }, [])
+  const { mutateAsync: updateCategory, isPending: isUpdating } = useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) =>
+      categoriesService.update(id, { category_name: name }),
+    onSuccess: (res) => { toast.success(res.message ?? "Category updated successfully"); invalidate() },
+    onError: (err: unknown) => { const m = getApiErrorToastMessage(err, "Failed to update category"); if (m) toast.error(m) },
+  })
+
+  const { mutateAsync: deleteCategory, isPending: isDeleting } = useMutation({
+    mutationFn: (id: number) => categoriesService.remove(id),
+    onSuccess: (res) => { toast.success(res.message ?? "Category deleted successfully"); invalidate() },
+    onError: (err: unknown) => { const m = getApiErrorToastMessage(err, "Failed to delete category"); if (m) toast.error(m) },
+  })
+
+  const updateCategoryById = (id: number, name: string) => updateCategory({ id, name })
 
   return {
     createCategory,
-    updateCategory,
+    updateCategory: updateCategoryById,
     deleteCategory,
-    isLoading: loadingState === "loading",
+    isLoading: isCreating || isUpdating || isDeleting,
   }
 }

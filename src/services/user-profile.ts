@@ -1,11 +1,9 @@
 import { userProfileApi, fetchUserProfileViaProxy } from "@/api/user-profile"
 import type { UserProfileRecord } from "@/api/user-profile-types"
 import { ApiError } from "@/api/types"
-import { mapSuperAdminUserToCustomer } from "@/lib/map-super-admin-user-to-customer"
 import { mapUserProfileToCustomerProfile } from "@/lib/map-user-profile-to-customer-profile"
 import type { CustomerProfile } from "@/components/super-admin/customer-management/mock-customer-profile"
 import type { SuperAdminUserRecord } from "@/api/super-admin-types"
-import { loadSuperAdminUsersByRole } from "@/lib/super-admin-users-cache"
 import type { SuperAdminUserListRole } from "@/lib/super-admin-user-list"
 import { superAdminUsersService } from "@/services/super-admin-users"
 
@@ -26,19 +24,6 @@ function extractProfileRecord(response: { data?: unknown }): UserProfileRecord |
 async function findUserInLists(userId: number): Promise<SuperAdminUserRecord | undefined> {
   for (const role of LIST_ROLES) {
     try {
-      const cached = await loadSuperAdminUsersByRole(role)
-      const hit = cached.find((customer) => Number(customer.id) === userId)
-      if (hit) {
-        const users = await superAdminUsersService.listByRole(role)
-        return users.find((user) => user.id === userId)
-      }
-    } catch {
-      // try next role list
-    }
-  }
-
-  for (const role of LIST_ROLES) {
-    try {
       const users = await superAdminUsersService.listByRole(role)
       const hit = users.find((user) => user.id === userId)
       if (hit) return hit
@@ -51,7 +36,6 @@ async function findUserInLists(userId: number): Promise<SuperAdminUserRecord | u
 }
 
 function buildProfileFromListUser(user: SuperAdminUserRecord): CustomerProfile {
-  const customer = mapSuperAdminUserToCustomer(user, user.id)
   return mapUserProfileToCustomerProfile({
     id: user.id,
     first_name: user.first_name,

@@ -1,7 +1,6 @@
 "use client"
 
-import { AdminModal } from "@/components/super-admin/shared/admin-modal"
-import { Button } from "@/components/ui/button"
+import { DeleteConfirmModal } from "@/components/shared/delete-confirm-modal"
 import type { CategoryRow } from "@/lib/categories-table-api"
 
 type DeleteCategoryDialogProps = {
@@ -19,47 +18,22 @@ export function DeleteCategoryDialog({
   isDeleting = false,
   onConfirm,
 }: DeleteCategoryDialogProps) {
-  const handleConfirm = async () => {
-    try {
-      await onConfirm()
-      onOpenChange(false)
-    } catch {
-      // Toast handled in parent
-    }
-  }
+  const name = category?.name ?? "this category"
 
   return (
-    <AdminModal
+    <DeleteConfirmModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Delete Category"
-      className="max-w-md"
-      footer={
+      title="Delete category?"
+      description={
         <>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleConfirm}
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Deleting…" : "Delete"}
-          </Button>
+          Are you sure you want to delete{" "}
+          <span className="font-semibold text-foreground">{name}</span>? Categories linked to
+          products cannot be deleted.
         </>
       }
-    >
-      <p className="text-sm text-muted-foreground">
-        Are you sure you want to delete{" "}
-        <span className="font-semibold text-foreground">{category?.name ?? "this category"}</span>
-        ? Categories linked to products cannot be deleted.
-      </p>
-    </AdminModal>
+      isConfirming={isDeleting}
+      onConfirm={onConfirm}
+    />
   )
 }

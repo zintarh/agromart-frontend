@@ -1,9 +1,9 @@
 import { redirect } from "@tanstack/react-router"
 
 import {
-  canAccessAdminOperations,
   canAccessPortal,
   canAccessSuperAdminOperations,
+  canAccessUsersManagement,
   getPortalHomePath,
   isPortalRole,
   type PortalRole,
@@ -31,12 +31,8 @@ export function isPortalAuthenticated(): boolean {
 }
 
 export function ensurePortalRouteAccess(location: { pathname: string; href: string }) {
-  if (!isClient) {
-    if (!isPortalPublicPath(location.pathname)) {
-      throw redirect({ to: PORTAL_LOGIN_PATH })
-    }
-    return
-  }
+  // localStorage is unavailable server-side; PortalRouteGate handles auth client-side.
+  if (!isClient) return
 
   if (isPortalPublicPath(location.pathname)) {
     if (isPortalAuthenticated()) {
@@ -59,15 +55,26 @@ export function ensurePortalRouteAccess(location: { pathname: string; href: stri
 }
 
 export function ensureAdminOperationsAccess() {
+  if (!isClient) return
   const user = getPortalUser()
-  if (!canAccessAdminOperations(user)) {
-    throw redirect({ to: getPortalHomePath(user?.role) })
+  if (!canAccessPortal(user)) {
+    throw redirect({ to: PORTAL_LOGIN_PATH })
   }
 }
 
 export function ensureSuperAdminOperationsAccess() {
+  if (!isClient) return
   const user = getPortalUser()
   if (!canAccessSuperAdminOperations(user)) {
+    throw redirect({ to: getPortalHomePath(user?.role) })
+  }
+}
+
+/** User management — super_admin only. */
+export function ensureUsersManagementAccess() {
+  if (!isClient) return
+  const user = getPortalUser()
+  if (!canAccessUsersManagement(user)) {
     throw redirect({ to: getPortalHomePath(user?.role) })
   }
 }

@@ -3,6 +3,7 @@ import { canAccessPortal } from "@/lib/portal-roles"
 import { getPortalAccessToken } from "@/lib/portal-auth"
 import type { AdminUser } from "@/types/admin-user"
 import { getUser } from "@/utils/storage"
+import { getSuperAdminUser } from "@/utils/super-admin-storage"
 import { useAdminStore } from "@/store/adminStore"
 
 /** Align Zustand portal session with localStorage before route guards run. */
@@ -12,7 +13,7 @@ export function syncPortalSessionFromStorage(): AdminUser | null {
   }
 
   const token = getPortalAccessToken()
-  const storedUser = getUser() as AdminUser | null
+  const storedUser = (getUser() as AdminUser | null) ?? getSuperAdminUser<AdminUser>()
 
   if (token && canAccessPortal(storedUser)) {
     const current = useAdminStore.getState().user
