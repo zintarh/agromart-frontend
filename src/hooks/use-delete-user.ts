@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { getApiErrorToastMessage } from "@/api/types"
+import { adminQueryKeys } from "@/lib/admin-query-keys"
 import { superAdminQueryKeys } from "@/lib/super-admin-query-keys"
 import { superAdminUsersService } from "@/services/super-admin-users"
 
@@ -15,6 +16,7 @@ export function useDeleteUser() {
     onSuccess: (res) => {
       toast.success(res.message ?? "User deactivated")
       queryClient.invalidateQueries({ queryKey: superAdminQueryKeys.users.all })
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.users.all })
     },
     onError: (err: unknown) => {
       const m = getApiErrorToastMessage(err, "Failed to deactivate user")

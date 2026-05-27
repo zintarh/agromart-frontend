@@ -3,20 +3,30 @@ import type { SuperAdminUserRecord } from "@/api/super-admin-types"
 
 export type AdminUserRole = "aggregator" | "logistics"
 
-function extractUserList(data: unknown): SuperAdminUserRecord[] {
-  const list = Array.isArray(data)
-    ? data
-    : data && typeof data === "object" && "data" in data
-      ? (data as { data: unknown }).data
-      : null
-  return Array.isArray(list) ? (list as SuperAdminUserRecord[]) : []
+function extractUserList(payload: unknown): SuperAdminUserRecord[] {
+  if (Array.isArray(payload)) {
+    return payload as SuperAdminUserRecord[]
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return []
+  }
+
+  const record = payload as Record<string, unknown>
+  const data = record.data
+
+  if (Array.isArray(data)) {
+    return data as SuperAdminUserRecord[]
+  }
+
+  return []
 }
 
 async function fetchList(
-  fetcher: () => Promise<{ data?: unknown }>
+  fetcher: () => Promise<unknown>
 ): Promise<SuperAdminUserRecord[]> {
   const response = await fetcher()
-  return extractUserList(response.data)
+  return extractUserList(response)
 }
 
 export const adminUsersService = {
